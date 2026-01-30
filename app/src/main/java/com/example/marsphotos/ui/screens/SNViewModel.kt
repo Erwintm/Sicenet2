@@ -25,9 +25,8 @@ import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.example.marsphotos.MarsPhotosApplication
-import com.example.marsphotos.data.MarsPhotosRepository
+
 import com.example.marsphotos.data.SNRepository
-import com.example.marsphotos.model.MarsPhoto
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import retrofit2.HttpException
@@ -76,9 +75,7 @@ class SNViewModel(private val snRepository: SNRepository) : ViewModel() {
         }
     }
 
-    /**
-     * Factory for [MarsViewModel] that takes [MarsPhotosRepository] as a dependency
-     */
+
     companion object {
         val Factory: ViewModelProvider.Factory = viewModelFactory {
             initializer {
