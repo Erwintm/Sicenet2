@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="login">Login</string>
+    <string name="usuario">Usuario</string>
+    <string name="mensajeError">Usuario y contraseña obligatorios</string>
+    <string name="contrasena">Contraseña</string>
+    <string name="entrar">Entrar</string>
+
+</resources>
