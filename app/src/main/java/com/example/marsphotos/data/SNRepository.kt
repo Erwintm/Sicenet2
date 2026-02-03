@@ -22,16 +22,20 @@ class NetworSNRepository(
         return try {
             val res = snApiService.acceso(bodyacceso.format(m, p).toRequestBody())
             val responseString = res.string()
-            Log.d("SICENET_REPOS", "Login Response: $responseString")
 
-            // Verificamos si el XML contiene la confirmación de acceso
-            if (responseString.contains("<accesoLoginResult>true</accesoLoginResult>")) {
+            // ESTO ES CLAVE: Mira en el Logcat qué está respondiendo el servidor realmente
+            Log.d("SICENET_DEBUG", "Cuerpo recibido: $responseString")
+
+            // Buscamos "true" ignorando si es mayúscula o minúscula
+            if (responseString.contains("true", ignoreCase = true)) {
                 "success"
             } else {
+                // Si falla, regresemos el error que viene en el XML para saber qué pasó
+                Log.e("SICENET_DEBUG", "Login fallido según el servidor")
                 "invalid"
             }
         } catch (e: Exception) {
-            Log.e("SICENET_REPOS", "Error login", e)
+            Log.e("SICENET_REPOS", "Error de red: ${e.message}")
             "error"
         }
     }
