@@ -2,65 +2,81 @@ package com.example.marsphotos.data
 
 import android.util.Log
 import com.example.marsphotos.model.ProfileStudent
-import com.example.marsphotos.model.Usuario
 import com.example.marsphotos.network.SICENETWService
-import com.example.marsphotos.network.bodyacceso
-import com.example.marsphotos.network.bodyperfil
+import com.example.marsphotos.network.getLoginXml
+import com.example.marsphotos.network.getPerfilXml
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.RequestBody.Companion.toRequestBody
-import java.lang.Exception
 
+// 1. Definición de la Interfaz
 interface SNRepository {
     suspend fun acceso(m: String, p: String): String
     suspend fun profile(m: String): ProfileStudent
 }
 
-class NetworSNRepository(
+// 2. Implementación de la Clase (Donde ocurre la magia)
+class NetworkSNRepository(
     private val snApiService: SICENETWService
 ) : SNRepository {
 
     override suspend fun acceso(m: String, p: String): String {
         return try {
-            val res = snApiService.acceso(bodyacceso.format(m, p).toRequestBody())
+            // Generamos el XML usando la interpolación de $
+            val xmlString = getLoginXml(m, p)
+            val requestBody = xmlString.toRequestBody("text/xml".toMediaTypeOrNull())
+
+            val res = snApiService.acceso(requestBody)
             val responseString = res.string()
 
-            // ESTO ES CLAVE: Mira en el Logcat qué está respondiendo el servidor realmente
-            Log.d("SICENET_DEBUG", "Cuerpo recibido: $responseString")
+            Log.d("SICENET_DEBUG", "Login Respuesta: $responseString")
 
-            // Buscamos "true" ignorando si es mayúscula o minúscula
-            if (responseString.contains("true", ignoreCase = true)) {
+            // Verificamos el JSON de éxito que vimos en tu Logcat
+            if (responseString.contains("\"acceso\":true", ignoreCase = true)) {
                 "success"
             } else {
-                // Si falla, regresemos el error que viene en el XML para saber qué pasó
-                Log.e("SICENET_DEBUG", "Login fallido según el servidor")
                 "invalid"
             }
         } catch (e: Exception) {
-            Log.e("SICENET_REPOS", "Error de red: ${e.message}")
+            Log.e("SICENET_DEBUG", "Error Login: ${e.message}")
             "error"
         }
     }
 
     override suspend fun profile(m: String): ProfileStudent {
         return try {
-            val res = snApiService.getPerfil(bodyperfil.toRequestBody())
-            val xml = res.string()
-            Log.d("SICENET_REPOS", "Profile Response: $xml")
+            val xmlString = getPerfilXml(m)
+            val requestBody = xmlString.toRequestBody("text/xml; charset=utf-8".toMediaTypeOrNull())
 
-            // Extracción de datos usando Regex (Punto 6 y 7)
-            // El servidor devuelve un JSON/XML escapado dentro del resultado
-            val nombre = Regex("""<nombre>([^<]+)""").find(xml)?.groupValues?.get(1) ?: "No encontrado"
-            val carrera = Regex("""<carrera>([^<]+)""").find(xml)?.groupValues?.get(1) ?: "N/A"
-            val promedio = Regex("""<promedioGeneral>([^<]+)""").find(xml)?.groupValues?.get(1) ?: "0.0"
+            val response = snApiService.getPerfil(requestBody)
+            val xml = response.string()
 
-            ProfileStudent(
-                matricula = m,
-                nombre = nombre,
-                carrera = carrera,
-                promedio = promedio
-            )
+            android.util.Log.d("SICENET_PERFIL", "XML RECIBIDO: $xml")
+
+            // 1. Extraemos el contenido JSON que está dentro de la etiqueta Result
+            val jsonContent = Regex("""<getAlumnoAcademicoWithLineamientoResult>([^<]+)""").find(xml)?.groupValues?.get(1)
+
+            if (jsonContent != null) {
+                // 2. Extraemos los campos específicos del JSON usando Regex
+                val nombre = Regex("""\"nombre\":\"([^\"]+)""").find(jsonContent)?.groupValues?.get(1) ?: "No encontrado"
+                val carrera = Regex("""\"carrera\":\"([^\"]+)""").find(jsonContent)?.groupValues?.get(1) ?: "No encontrada"
+
+                // Nota: En este JSON no veo un campo "promedio", pero veo "cdtosAcumulados" y "semActual"
+                // Por ahora pondré la especialidad o créditos, o puedes revisar si hay otro método para promedio
+                val infoExtra = Regex("""\"especialidad\":\"([^\"]+)""").find(jsonContent)?.groupValues?.get(1) ?: ""
+
+                ProfileStudent(
+                    matricula = m,
+                    nombre = nombre,
+                    carrera = carrera,
+                    promedio = infoExtra // O el dato que prefieras mostrar en ese campo
+                )
+            } else {
+                ProfileStudent(m, "Error", "Formato inesperado", "0.0")
+            }
+
         } catch (e: Exception) {
-            Log.e("SICENET_REPOS", "Error profile", e)
-            ProfileStudent(matricula = m, nombre = "Error al cargar")
+            android.util.Log.e("SICENET_PERFIL", "ERROR: ${e.message}")
+            ProfileStudent(m, "Error de Conexión", "", "0.0")
         }
     }
 }

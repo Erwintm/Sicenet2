@@ -1,36 +1,28 @@
+package com.example.marsphotos.network
+
 import android.content.Context
 import android.preference.PreferenceManager
+import android.util.Log
 import okhttp3.Interceptor
-import okhttp3.Request
 import okhttp3.Response
-import java.io.IOException
 
-/**
- * This interceptor put all the Cookies in Preferences in the Request.
- * Your implementation on how to get the Preferences may ary, but this will work 99% of the time.
- */
-class AddCookiesInterceptor(// We're storing our stuff in a database made just for cookies called PREF_COOKIES.
-    // I reccomend you do this, and don't change this default value.
-    private val context: Context
-) : Interceptor {
-    @Throws(IOException::class)
+class AddCookiesInterceptor(private val context: Context) : Interceptor {
     override fun intercept(chain: Interceptor.Chain): Response {
-        val builder: Request.Builder = chain.request().newBuilder()
-        val preferences = PreferenceManager.getDefaultSharedPreferences(
-            context
-        ).getStringSet(PREF_COOKIES, HashSet()) as HashSet<String>?
+        val builder = chain.request().newBuilder()
+        val prefs = PreferenceManager.getDefaultSharedPreferences(context)
 
-        // Use the following if you need everything in one line.
-        // Some APIs die if you do it differently.
-        /*String cookiestring = "";
-        for (String cookie : preferences) {
-            String[] parser = cookie.split(";");
-            cookiestring = cookiestring + parser[0] + "; ";
+        // Intentamos recuperar las cookies
+        val cookies = prefs.getStringSet(PREF_COOKIES, null)
+
+        if (!cookies.isNullOrEmpty()) {
+            val cookieString = cookies.joinToString(separator = "; ") { it.split(";")[0] }
+            builder.addHeader("Cookie", cookieString)
+            // ESTO ES LO QUE DEBES BUSCAR EN EL LOGCAT
+            Log.d("COOKIES_REPORTE", "ENVIANDO AL SERVIDOR: $cookieString")
+        } else {
+            Log.e("COOKIES_REPORTE", "¡ATENCIÓN! No hay cookies para enviar. Por eso da Error 500.")
         }
-        builder.addHeader("Cookie", cookiestring);
-        */for (cookie in preferences!!) {
-            builder.addHeader("Cookie", cookie)
-        }
+
         return chain.proceed(builder.build())
     }
 
