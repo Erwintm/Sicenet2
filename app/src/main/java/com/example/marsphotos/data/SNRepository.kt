@@ -50,33 +50,34 @@ class NetworkSNRepository(
             val response = snApiService.getPerfil(requestBody)
             val xml = response.string()
 
-            android.util.Log.d("SICENET_PERFIL", "XML RECIBIDO: $xml")
-
-            // 1. Extraemos el contenido JSON que está dentro de la etiqueta Result
+            // Extraemos el JSON que viene dentro del XML
             val jsonContent = Regex("""<getAlumnoAcademicoWithLineamientoResult>([^<]+)""").find(xml)?.groupValues?.get(1)
 
             if (jsonContent != null) {
-                // 2. Extraemos los campos específicos del JSON usando Regex
-                val nombre = Regex("""\"nombre\":\"([^\"]+)""").find(jsonContent)?.groupValues?.get(1) ?: "No encontrado"
-                val carrera = Regex("""\"carrera\":\"([^\"]+)""").find(jsonContent)?.groupValues?.get(1) ?: "No encontrada"
+                // Extraemos los valores del JSON usando Regex
+                val nombre = Regex("""\"nombre\":\"([^\"]+)""").find(jsonContent)?.groupValues?.get(1)
+                    ?: "Estudiante"
 
-                // Nota: En este JSON no veo un campo "promedio", pero veo "cdtosAcumulados" y "semActual"
-                // Por ahora pondré la especialidad o créditos, o puedes revisar si hay otro método para promedio
-                val infoExtra = Regex("""\"especialidad\":\"([^\"]+)""").find(jsonContent)?.groupValues?.get(1) ?: ""
+                val carrera = Regex("""\"carrera\":\"([^\"]+)""").find(jsonContent)?.groupValues?.get(1)
+                    ?: "Carrera"
+
+                // Usamos la especialidad en el campo que antes era para el promedio
+                val especialidad = Regex("""\"especialidad\":\"([^\"]+)""").find(jsonContent)?.groupValues?.get(1)
+                    ?: "Sin especialidad"
 
                 ProfileStudent(
                     matricula = m,
                     nombre = nombre,
                     carrera = carrera,
-                    promedio = infoExtra // O el dato que prefieras mostrar en ese campo
+                    promedio = especialidad // Especialidad enviada al campo de promedio
                 )
             } else {
-                ProfileStudent(m, "Error", "Formato inesperado", "0.0")
+                ProfileStudent(m, "Error de formato", "No se pudo leer el JSON", "")
             }
 
         } catch (e: Exception) {
-            android.util.Log.e("SICENET_PERFIL", "ERROR: ${e.message}")
-            ProfileStudent(m, "Error de Conexión", "", "0.0")
+            android.util.Log.e("SICENET_PERFIL", "Error: ${e.message}")
+            ProfileStudent(m, "Error de conexión", "Reintente", "")
         }
     }
 }

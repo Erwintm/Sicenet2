@@ -33,7 +33,7 @@ fun PerfilPantalla(
                     Text("Nombre: ${perfil.nombre}")
                     Text("Matrícula: ${perfil.matricula}")
                     Text("Carrera: ${perfil.carrera}")
-                    Text("Promedio: ${perfil.promedio}")
+                    Text("Especialidad: ${perfil.promedio}")
                 }
             }
         }
