@@ -50,34 +50,38 @@ class NetworkSNRepository(
             val response = snApiService.getPerfil(requestBody)
             val xml = response.string()
 
-            // Extraemos el JSON que viene dentro del XML
+            // Extraemos el bloque JSON del XML
             val jsonContent = Regex("""<getAlumnoAcademicoWithLineamientoResult>([^<]+)""").find(xml)?.groupValues?.get(1)
 
             if (jsonContent != null) {
-                // Extraemos los valores del JSON usando Regex
-                val nombre = Regex("""\"nombre\":\"([^\"]+)""").find(jsonContent)?.groupValues?.get(1)
-                    ?: "Estudiante"
+                // 1. Extraemos los datos básicos
+                val nombre = Regex("""\"nombre\":\"([^\"]+)""").find(jsonContent)?.groupValues?.get(1) ?: "Estudiante"
+                val carrera = Regex("""\"carrera\":\"([^\"]+)""").find(jsonContent)?.groupValues?.get(1) ?: "Carrera"
 
-                val carrera = Regex("""\"carrera\":\"([^\"]+)""").find(jsonContent)?.groupValues?.get(1)
-                    ?: "Carrera"
+                // 2. Especialidad (mapeada a 'promedio' para no cambiar el data class)
+                val especialidad = Regex("""\"especialidad\":\"([^\"]+)""").find(jsonContent)?.groupValues?.get(1) ?: "Sin Especialidad"
 
-                // Usamos la especialidad en el campo que antes era para el promedio
-                val especialidad = Regex("""\"especialidad\":\"([^\"]+)""").find(jsonContent)?.groupValues?.get(1)
-                    ?: "Sin especialidad"
+                // 3. Los nuevos campos para el segundo cuadro
+                val semestre = Regex("""\"semActual\":(\d+)""").find(jsonContent)?.groupValues?.get(1) ?: "0"
+                val creditos = Regex("""\"cdtosAcumulados\":(\d+)""").find(jsonContent)?.groupValues?.get(1) ?: "0"
+                val fecha = Regex("""\"fechaReins\":\"([^\"]+)""").find(jsonContent)?.groupValues?.get(1) ?: "No disponible"
 
                 ProfileStudent(
                     matricula = m,
                     nombre = nombre,
                     carrera = carrera,
-                    promedio = especialidad // Especialidad enviada al campo de promedio
+                    promedio = especialidad, // Mantenemos el nombre del campo como pediste
+                    semestre = semestre,
+                    creditos = creditos,
+                    fechaReins = fecha
                 )
             } else {
-                ProfileStudent(m, "Error de formato", "No se pudo leer el JSON", "")
+                ProfileStudent(m, "Error", "Formato inválido", "", "", "", "")
             }
 
         } catch (e: Exception) {
             android.util.Log.e("SICENET_PERFIL", "Error: ${e.message}")
-            ProfileStudent(m, "Error de conexión", "Reintente", "")
+            ProfileStudent(m, "Error de red", "", "", "", "", "")
         }
     }
 }
