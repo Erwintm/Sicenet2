@@ -8,9 +8,11 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
@@ -22,11 +24,15 @@ import com.example.marsphotos.R
 
 @Composable
 fun LoginPantalla(
-    viewModel: LoginViewModel = viewModel()
+    // 1. Agregamos el parámetro onLoginSuccess que usaremos para navegar
+    onLoginSuccess: (String) -> Unit,
+    // 2. IMPORTANTE: Pasamos la Factory para que el ViewModel se cree correctamente
+    viewModel: LoginViewModel = viewModel(factory = LoginViewModel.Factory)
 ) {
     Column(
         modifier = Modifier.fillMaxSize().padding(24.dp),
-        verticalArrangement = Arrangement.Center
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Text(stringResource(R.string.login), fontSize = 26.sp)
 
@@ -36,7 +42,8 @@ fun LoginPantalla(
             value = viewModel.usuario,
             onValueChange = { viewModel.usuario = it },
             label = { Text(stringResource(R.string.usuario)) },
-            singleLine = true
+            singleLine = true,
+            modifier = Modifier.fillMaxWidth()
         )
 
         Spacer(modifier = Modifier.height(8.dp))
@@ -46,16 +53,27 @@ fun LoginPantalla(
             onValueChange = { viewModel.password = it },
             label = { Text(stringResource(R.string.contrasena)) },
             visualTransformation = PasswordVisualTransformation(),
-            singleLine = true
+            singleLine = true,
+            modifier = Modifier.fillMaxWidth()
         )
 
         Spacer(modifier = Modifier.height(16.dp))
 
+        // 3. Modificamos el botón para manejar el estado de carga y el éxito
         Button(
-            onClick = { viewModel.login() },
+            onClick = {
+                viewModel.login(onLoginSuccess = { matricula ->
+                    onLoginSuccess(matricula)
+                })
+            },
+            enabled = !viewModel.isLoading,
             modifier = Modifier.fillMaxWidth()
         ) {
-            Text(stringResource(R.string.entrar))
+            if (viewModel.isLoading) {
+                CircularProgressIndicator(color = Color.White, modifier = Modifier.padding(4.dp))
+            } else {
+                Text(stringResource(R.string.entrar))
+            }
         }
 
         viewModel.mensajeError?.let {

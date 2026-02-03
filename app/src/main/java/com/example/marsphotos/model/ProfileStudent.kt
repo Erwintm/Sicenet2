@@ -1,7 +1,10 @@
 package com.example.marsphotos.model
 
-import kotlinx.serialization.Serializable
-
-
-data class ProfileStudent (val matricula : String) {
-}
+// Data class lista para recibir los datos del perfil
+data class ProfileStudent(
+    val matricula: String = "",
+    val nombre: String = "",
+    val carrera: String = "",
+    val promedio: String = "",
+    val semestre: String = ""
+)
