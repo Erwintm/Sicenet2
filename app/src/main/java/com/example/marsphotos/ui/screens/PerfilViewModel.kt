@@ -30,7 +30,7 @@ class PerfilViewModel(private val snRepository: SNRepository) : ViewModel() {
     companion object {
         val Factory: ViewModelProvider.Factory = viewModelFactory {
             initializer {
-                // Usamos la constante APPLICATION_KEY directamente gracias al import de arriba
+
                 val application = (this[APPLICATION_KEY] as MarsPhotosApplication)
                 val repository = application.container.snRepository
                 PerfilViewModel(snRepository = repository)

@@ -13,15 +13,13 @@ class ReceivedCookiesInterceptor(private val context: Context) : Interceptor {
     override fun intercept(chain: Interceptor.Chain): Response {
         val originalResponse: Response = chain.proceed(chain.request())
 
-        // Si la respuesta trae el encabezado "Set-Cookie", las guardamos
-        // Dentro de tu interceptor, busca la parte donde guardas y cámbiala por esta:
-        // Dentro de tu intercept() de ReceivedCookiesInterceptor
+
         if (originalResponse.headers("Set-Cookie").isNotEmpty()) {
             val cookies = originalResponse.headers("Set-Cookie").toMutableSet()
 
             val success = PreferenceManager.getDefaultSharedPreferences(context).edit()
                 .putStringSet(AddCookiesInterceptor.PREF_COOKIES, cookies)
-                .commit() // COMMIT es síncrono, asegura que se guarde YA.
+                .commit()
 
             Log.d("COOKIES_REPORTE", "COOKIES GUARDADAS: $success")
         }

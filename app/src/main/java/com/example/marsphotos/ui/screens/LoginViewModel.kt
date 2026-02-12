@@ -42,7 +42,7 @@ class LoginViewModel(private val snRepository: SNRepository) : ViewModel() {
 
     companion object {
         val Factory: ViewModelProvider.Factory = viewModelFactory {
-            // Se agrega <LoginViewModel> para que el compilador sepa qué tipo es T
+
             initializer {
                 val application = (this[APPLICATION_KEY] as MarsPhotosApplication)
                 LoginViewModel(snRepository = application.container.snRepository)

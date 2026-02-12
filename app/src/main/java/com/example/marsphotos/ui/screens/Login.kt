@@ -24,9 +24,9 @@ import com.example.marsphotos.R
 
 @Composable
 fun LoginPantalla(
-    // 1. Agregamos el parámetro onLoginSuccess que usaremos para navegar
+
     onLoginSuccess: (String) -> Unit,
-    // 2. IMPORTANTE: Pasamos la Factory para que el ViewModel se cree correctamente
+
     viewModel: LoginViewModel = viewModel(factory = LoginViewModel.Factory)
 ) {
     Column(
@@ -59,7 +59,7 @@ fun LoginPantalla(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // 3. Modificamos el botón para manejar el estado de carga y el éxito
+
         Button(
             onClick = {
                 viewModel.login(onLoginSuccess = { matricula ->

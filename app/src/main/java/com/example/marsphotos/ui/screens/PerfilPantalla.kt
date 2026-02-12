@@ -38,7 +38,7 @@ fun PerfilPantalla(
                 Text("Cargando datos de SICENET...")
             }
         } else {
-            // --- CUADRO 1: INFORMACIÓN PERSONAL ---
+
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 colors = CardDefaults.cardColors(
@@ -57,7 +57,7 @@ fun PerfilPantalla(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // --- CUADRO 2: ESTATUS ACADÉMICO (EL NUEVO) ---
+
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)

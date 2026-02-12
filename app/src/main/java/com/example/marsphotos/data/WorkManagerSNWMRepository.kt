@@ -26,12 +26,12 @@ class WorkManagerSNWMRepository(ctx: Context): SNWMRepository {
                     .addTag("EsteQuieroMonitorear").build()
             )
 
-        // Add WorkRequest to blur the image
+
         val wrdbWorker = OneTimeWorkRequestBuilder<LoginDBWorker>()
 
         continuation = continuation.then(wrdbWorker.build())
 
-        // Actually start the work
+
         continuation.enqueue()
 
     }

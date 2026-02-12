@@ -17,7 +17,7 @@ interface AppContainer {
 class DefaultAppContainer(private val applicationContext: Context) : AppContainer {
     private val baseUrlSN = "https://sicenet.surguanajuato.tecnm.mx"
 
-    // Configuramos el cliente OkHttp con los interceptores de Cookies (Puntos 1 y 6 de la evaluación)
+
     private val client: OkHttpClient by lazy {
         OkHttpClient.Builder()
             .addInterceptor(AddCookiesInterceptor(applicationContext))
@@ -25,7 +25,7 @@ class DefaultAppContainer(private val applicationContext: Context) : AppContaine
             .build()
     }
 
-    // Configuración de Retrofit
+
     private val retrofitSN: Retrofit by lazy {
         Retrofit.Builder()
             .baseUrl(baseUrlSN)
@@ -40,6 +40,6 @@ class DefaultAppContainer(private val applicationContext: Context) : AppContaine
     }
 
     override val snRepository: SNRepository by lazy {
-        NetworkSNRepository(retrofitServiceSN) // El nombre debe coincidir con la clase de arriba
+        NetworkSNRepository(retrofitServiceSN)
     }
 }

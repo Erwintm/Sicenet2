@@ -11,16 +11,16 @@ class AddCookiesInterceptor(private val context: Context) : Interceptor {
         val builder = chain.request().newBuilder()
         val prefs = PreferenceManager.getDefaultSharedPreferences(context)
 
-        // Intentamos recuperar las cookies
+
         val cookies = prefs.getStringSet(PREF_COOKIES, null)
 
         if (!cookies.isNullOrEmpty()) {
             val cookieString = cookies.joinToString(separator = "; ") { it.split(";")[0] }
             builder.addHeader("Cookie", cookieString)
-            // ESTO ES LO QUE DEBES BUSCAR EN EL LOGCAT
+
             Log.d("COOKIES_REPORTE", "ENVIANDO AL SERVIDOR: $cookieString")
         } else {
-            Log.e("COOKIES_REPORTE", "¡ATENCIÓN! No hay cookies para enviar. Por eso da Error 500.")
+            Log.e("COOKIES_REPORTE", "¡ATENCIÓN! No hay cookies para enviar.")
         }
 
         return chain.proceed(builder.build())

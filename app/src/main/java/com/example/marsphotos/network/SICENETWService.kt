@@ -1,4 +1,4 @@
-package com.example.marsphotos.network
+ package com.example.marsphotos.network
 
 import okhttp3.RequestBody
 import okhttp3.ResponseBody
@@ -6,7 +6,7 @@ import retrofit2.http.Body
 import retrofit2.http.Headers
 import retrofit2.http.POST
 
-// Generación del XML para Login
+
 fun getLoginXml(matricula: String, nip: String): String = """
     <?xml version="1.0" encoding="utf-8"?>
     <soap:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
@@ -20,8 +20,7 @@ fun getLoginXml(matricula: String, nip: String): String = """
     </soap:Envelope>
 """.trimIndent()
 
-// Generación del XML para Perfil - Corregido a strMatricula
-// 1. Corregimos el nombre del método en el XML
+
 fun getPerfilXml(matricula: String): String = """
 <?xml version="1.0" encoding="utf-8"?>
 <soap:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
@@ -43,7 +42,7 @@ interface SICENETWService {
 
     @Headers(
         "Content-Type: text/xml; charset=utf-8",
-        // 2. Corregimos el Header con el nombre real del método
+
         "SOAPAction: \"http://tempuri.org/getAlumnoAcademicoWithLineamiento\""
     )
     @POST("/ws/wsalumnos.asmx")
