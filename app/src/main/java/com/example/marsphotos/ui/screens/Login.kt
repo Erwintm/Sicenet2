@@ -62,7 +62,7 @@ fun LoginPantalla(
 
         Button(
             onClick = {
-                viewModel.login(onLoginSuccess = { matricula ->
+                viewModel. login(onLoginSuccess = { matricula ->
                     onLoginSuccess(matricula)
                 })
             },

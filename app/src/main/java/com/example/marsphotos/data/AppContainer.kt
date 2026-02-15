@@ -29,7 +29,7 @@ class DefaultAppContainer(private val applicationContext: Context) : AppContaine
     private val retrofitSN: Retrofit by lazy {
         Retrofit.Builder()
             .baseUrl(baseUrlSN)
-            .client(client) // <-- Es vital que sea ESTE cliente con interceptores
+            .client(client)
             .addConverterFactory(ScalarsConverterFactory.create())
             .addConverterFactory(SimpleXmlConverterFactory.createNonStrict())
             .build()

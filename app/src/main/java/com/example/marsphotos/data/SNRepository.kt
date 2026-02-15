@@ -70,7 +70,7 @@ class NetworkSNRepository(
                     matricula = m,
                     nombre = nombre,
                     carrera = carrera,
-                    promedio = especialidad, // Mantenemos el nombre del campo como pediste
+                    promedio = especialidad,
                     semestre = semestre,
                     creditos = creditos,
                     fechaReins = fecha

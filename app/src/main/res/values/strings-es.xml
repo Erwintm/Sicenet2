@@ -5,5 +5,5 @@
     <string name="mensajeError">Usuario y contraseña obligatorios</string>
     <string name="contrasena">Contraseña</string>
     <string name="entrar">Entrar</string>
-
+    <string name="menu">Menu estudiante</string>
 </resources>
