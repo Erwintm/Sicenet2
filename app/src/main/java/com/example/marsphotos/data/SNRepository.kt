@@ -1,10 +1,12 @@
 package com.example.marsphotos.data
 
 import android.util.Log
+import com.example.marsphotos.model.CargaAcademica
 import com.example.marsphotos.model.ProfileStudent
 import com.example.marsphotos.network.SICENETWService
 import com.example.marsphotos.network.getLoginXml
 import com.example.marsphotos.network.getPerfilXml
+import kotlinx.coroutines.flow.Flow
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.RequestBody.Companion.toRequestBody
 
@@ -12,11 +14,13 @@ import okhttp3.RequestBody.Companion.toRequestBody
 interface SNRepository {
     suspend fun acceso(m: String, p: String): String
     suspend fun profile(m: String): ProfileStudent
+
 }
 
 
 class NetworkSNRepository(
-    private val snApiService: SICENETWService
+    private val snApiService: SICENETWService,
+
 ) : SNRepository {
 
     override suspend fun acceso(m: String, p: String): String {
@@ -84,4 +88,5 @@ class NetworkSNRepository(
             ProfileStudent(m, "Error de red", "", "", "", "", "")
         }
     }
+
 }

@@ -43,3 +43,25 @@ data class AccesoLoginResponse (
     @Namespace(reference = "http://tempuri.org/")
     val accesoLoginResult: String? = null
 )
+
+@Serializable
+@Root(name = "soap:Envelope")
+data class EnvelopeCarga(
+    @field:Element(name = "Body")
+    @param:Element(name = "Body")
+    val body: BodyCargaResponse? = null
+)
+
+@Serializable
+@Root(name = "Body")
+data class BodyCargaResponse(
+    @field:Element(name = "getCargaAcademicaByAlumnoResponse")
+    val response: CargaResponse? = null
+)
+
+@Serializable
+@Root(name = "getCargaAcademicaByAlumnoResponse")
+data class CargaResponse(
+    @field:Element(name = "getCargaAcademicaByAlumnoResult")
+    val result: String? = null
+)

@@ -43,10 +43,10 @@ import com.example.marsphotos.model.MenuOption
 fun MenuScreen(navController: NavController) {
 
     val options = listOf(
-        MenuOption("Carga\nAcadémica", "carga", Color(0xFF1976D2)), // Azul
-        MenuOption("Kardex\nEscolar", "kardex", Color(0xFF388E3C)),   // Verde
-        MenuOption("Calificaciones\npor Unidad", "notas", Color(0xFFFBC02D)), // Amarillo
-        MenuOption("Perfil de\nUsuario", "perfil", Color(0xFF7B1FA2)) // Morado
+        MenuOption("Carga\nAcadémica", "carga", Color(0xFF1976D2)),
+        MenuOption("Kardex\nEscolar", "kardex", Color(0xFF388E3C)),
+        MenuOption("Calificaciones\npor Unidad", "notas", Color(0xFFFBC02D)),
+
     )
 
     Scaffold(

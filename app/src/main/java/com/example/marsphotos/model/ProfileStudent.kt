@@ -5,7 +5,7 @@ data class ProfileStudent(
     val matricula: String,
     val nombre: String,
     val carrera: String,
-    val promedio: String, // Antes el campo promedio
+    val promedio: String,
     val semestre: String,
     val creditos: String,
     val fechaReins: String

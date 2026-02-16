@@ -1,16 +1,19 @@
 package com.example.marsphotos.ui.screens
 
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavController
 
 
 @Composable
 fun PerfilPantalla(
+    navController: NavController,
     matricula: String,
     viewModel: PerfilViewModel = viewModel(factory = PerfilViewModel.Factory)
 ) {
@@ -72,6 +75,13 @@ fun PerfilPantalla(
                     val fechaLimpia = perfil.fechaReins.replace("|", " a las ")
                     Text("Próxima Reinscripción: $fechaLimpia")
                 }
+            }
+            Button(
+                onClick = { navController.navigate("menu") },
+                modifier = Modifier.fillMaxWidth().height(56.dp),
+                shape = RoundedCornerShape(12.dp)
+            ) {
+                Text("IR AL MENÚ PRINCIPAL")
             }
         }
     }
