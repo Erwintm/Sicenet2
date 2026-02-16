@@ -8,12 +8,12 @@ plugins {
 
 android {
     namespace = "com.example.marsphotos"
-    compileSdk = 34
+    compileSdk = 35
 
     defaultConfig {
         applicationId = "com.example.marsphotos"
         minSdk = 24
-        targetSdk = 34
+        targetSdk = 35
         versionCode = 1
         versionName = "1.0"
 
@@ -75,13 +75,15 @@ dependencies {
     // Coil e Imágenes
     implementation("io.coil-kt:coil-compose:2.4.0")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.0")
-
+    implementation("com.google.code.gson:gson:2.10.1")
     // --- AQUÍ ESTABA EL ERROR: BAJAMOS ESTAS DOS ---
     implementation("androidx.work:work-runtime-ktx:2.8.1") // Bajamos de 2.9.0 a 2.8.1
     implementation("androidx.navigation:navigation-compose:2.7.7")
     implementation("androidx.navigation:navigation-runtime-android:2.9.7")
     implementation("androidx.compose.material3:material3-android:1.4.0")
-    implementation("androidx.room:room-common-jvm:2.8.4") // Cambiamos de 2.9.7 a 2.7.7
+    implementation("androidx.room:room-common-jvm:2.8.4")
+    implementation("androidx.room:room-runtime-android:2.8.4")
+    implementation("com.google.firebase:firebase-crashlytics-buildtools:3.0.6") // Cambiamos de 2.9.7 a 2.7.7
     // ----------------------------------------------
 
     testImplementation("junit:junit:4.13.2")

@@ -13,7 +13,7 @@ import androidx.navigation.NavController
 
 @Composable
 fun PerfilPantalla(
-    navController: NavController,
+
     matricula: String,
     viewModel: PerfilViewModel = viewModel(factory = PerfilViewModel.Factory)
 ) {
@@ -76,13 +76,7 @@ fun PerfilPantalla(
                     Text("Próxima Reinscripción: $fechaLimpia")
                 }
             }
-            Button(
-                onClick = { navController.navigate("menu") },
-                modifier = Modifier.fillMaxWidth().height(56.dp),
-                shape = RoundedCornerShape(12.dp)
-            ) {
-                Text("IR AL MENÚ PRINCIPAL")
-            }
+            
         }
     }
 }

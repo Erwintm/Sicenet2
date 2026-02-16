@@ -18,6 +18,11 @@ class DefaultAppContainer(private val applicationContext: Context) : AppContaine
     private val baseUrlSN = "https://sicenet.surguanajuato.tecnm.mx"
 
 
+    private val database: SNDatabase by lazy {
+        SNDatabase.getDatabase(applicationContext)
+    }
+
+
     private val client: OkHttpClient by lazy {
         OkHttpClient.Builder()
             .addInterceptor(AddCookiesInterceptor(applicationContext))
@@ -31,6 +36,7 @@ class DefaultAppContainer(private val applicationContext: Context) : AppContaine
             .baseUrl(baseUrlSN)
             .client(client)
             .addConverterFactory(ScalarsConverterFactory.create())
+
             .addConverterFactory(SimpleXmlConverterFactory.createNonStrict())
             .build()
     }
@@ -39,7 +45,13 @@ class DefaultAppContainer(private val applicationContext: Context) : AppContaine
         retrofitSN.create(SICENETWService::class.java)
     }
 
+
     override val snRepository: SNRepository by lazy {
-        NetworkSNRepository(retrofitServiceSN)
+        NetworkSNRepository(retrofitServiceSN, database.cargaDao())
+    }
+
+
+    val wmRepository: SNWMRepository by lazy {
+        WorkManagerSNWMRepository(applicationContext)
     }
 }

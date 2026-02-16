@@ -21,5 +21,5 @@ data class CargaAcademica(
     val Materia: String,
     val Grupo: String,
 
-    val fechaSincronizacion: String
+    var fechaSincronizacion: String
 )

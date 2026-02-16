@@ -1,13 +1,17 @@
 package com.example.marsphotos.data
 
 import android.content.Context
+import androidx.work.Constraints
 import androidx.work.ExistingWorkPolicy
+import androidx.work.NetworkType
 import androidx.work.OneTimeWorkRequest
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkInfo
 import androidx.work.WorkManager
+import com.example.marsphotos.workers.FetchCargaWorker
 import com.example.marsphotos.workers.LoginDBWorker
 import com.example.marsphotos.workers.LoginWorker
+import com.example.marsphotos.workers.StoreCargaWorker
 import kotlinx.coroutines.flow.Flow
 
 class WorkManagerSNWMRepository(ctx: Context): SNWMRepository {
@@ -41,6 +45,22 @@ class WorkManagerSNWMRepository(ctx: Context): SNWMRepository {
     }
 
     override fun cargaAcademica() {
-        //TODO("Not yet implemented")
+
+        val restricciones = Constraints.Builder()
+            .setRequiredNetworkType(NetworkType.CONNECTED)
+            .build()
+
+
+        val fetchCarga = OneTimeWorkRequestBuilder<FetchCargaWorker>()
+            .setConstraints(restricciones)
+            .build()
+
+
+        val storeCarga = OneTimeWorkRequestBuilder<StoreCargaWorker>().build()
+
+        workManager
+            .beginUniqueWork("carga_sync", ExistingWorkPolicy.KEEP, fetchCarga)
+            .then(storeCarga)
+            .enqueue()
     }
 }

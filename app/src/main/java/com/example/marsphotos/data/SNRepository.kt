@@ -2,8 +2,10 @@ package com.example.marsphotos.data
 
 import android.util.Log
 import com.example.marsphotos.model.CargaAcademica
+import com.example.marsphotos.model.EnvelopeCarga
 import com.example.marsphotos.model.ProfileStudent
 import com.example.marsphotos.network.SICENETWService
+import com.example.marsphotos.network.getCargaXml
 import com.example.marsphotos.network.getLoginXml
 import com.example.marsphotos.network.getPerfilXml
 import kotlinx.coroutines.flow.Flow
@@ -14,13 +16,14 @@ import okhttp3.RequestBody.Companion.toRequestBody
 interface SNRepository {
     suspend fun acceso(m: String, p: String): String
     suspend fun profile(m: String): ProfileStudent
-
+    suspend fun fetchCargaAcademica(): String
+    fun getCargaLocal(): Flow<List<CargaAcademica>>
 }
 
 
 class NetworkSNRepository(
     private val snApiService: SICENETWService,
-
+    private val snDao: SNDao
 ) : SNRepository {
 
     override suspend fun acceso(m: String, p: String): String {
@@ -88,5 +91,23 @@ class NetworkSNRepository(
             ProfileStudent(m, "Error de red", "", "", "", "", "")
         }
     }
+    override suspend fun fetchCargaAcademica(): String {
+        return try {
+            val xmlString = getCargaXml()
+            val requestBody = xmlString.toRequestBody("text/xml; charset=utf-8".toMediaTypeOrNull())
+            val response = snApiService.getCarga(requestBody)
+            val xml = response.string()
+
+
+            val jsonContent = Regex("""<getCargaAcademicaByAlumnoResult>([^<]+)""").find(xml)?.groupValues?.get(1)
+
+            jsonContent ?: ""
+        } catch (e: Exception) {
+            Log.e("SICENET_CARGA", "Error: ${e.message}")
+            ""
+        }
+    }
+    override fun getCargaLocal(): Flow<List<CargaAcademica>> = snDao.obtenerCarga()
 
 }
+
