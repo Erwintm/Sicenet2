@@ -8,15 +8,19 @@ import com.example.marsphotos.network.SICENETWService
 import com.example.marsphotos.network.getCargaXml
 import com.example.marsphotos.network.getLoginXml
 import com.example.marsphotos.network.getPerfilXml
+import com.google.firebase.crashlytics.buildtools.reloc.com.google.common.reflect.TypeToken
+import com.google.gson.Gson
 import kotlinx.coroutines.flow.Flow
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.RequestBody.Companion.toRequestBody
+import okhttp3.MediaType.Companion.toMediaType
+
 
 
 interface SNRepository {
     suspend fun acceso(m: String, p: String): String
     suspend fun profile(m: String): ProfileStudent
-    suspend fun fetchCargaAcademica(): String
+    suspend fun fetchCargaAcademica(): List<CargaAcademica>
     fun getCargaLocal(): Flow<List<CargaAcademica>>
 }
 
@@ -91,22 +95,31 @@ class NetworkSNRepository(
             ProfileStudent(m, "Error de red", "", "", "", "", "")
         }
     }
-    override suspend fun fetchCargaAcademica(): String {
+    override suspend fun fetchCargaAcademica(): List<CargaAcademica> {
         return try {
+
             val xmlString = getCargaXml()
-            val requestBody = xmlString.toRequestBody("text/xml; charset=utf-8".toMediaTypeOrNull())
+            val requestBody = xmlString.toRequestBody("text/xml; charset=utf-8".toMediaType())
+
             val response = snApiService.getCarga(requestBody)
-            val xml = response.string()
 
+            val json = response.body
+                ?.response
+                ?.result
+                ?: return emptyList()
 
-            val jsonContent = Regex("""<getCargaAcademicaByAlumnoResult>([^<]+)""").find(xml)?.groupValues?.get(1)
+            val listaType = object : TypeToken<List<CargaAcademica>>() {}.type
+            Gson().fromJson(json, listaType)
 
-            jsonContent ?: ""
         } catch (e: Exception) {
             Log.e("SICENET_CARGA", "Error: ${e.message}")
-            ""
+            emptyList()
         }
     }
+
+
+
+
     override fun getCargaLocal(): Flow<List<CargaAcademica>> = snDao.obtenerCarga()
 
 }

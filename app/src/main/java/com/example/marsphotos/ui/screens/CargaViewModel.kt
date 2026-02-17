@@ -24,24 +24,7 @@ class CargaViewModel(
             started = SharingStarted.WhileSubscribed(5_000),
             initialValue = emptyList()
         )
-    companion object {
-        val Factory: ViewModelProvider.Factory = viewModelFactory {
-            initializer {
-                // 1. Obtenemos el contexto de la aplicación
-                val application = (this[APPLICATION_KEY] as BaseApplication)
 
-                // 2. Extraemos los repositorios del contenedor (AppContainer)
-                // Asegúrate de que estos nombres coincidan con los de tu AppContainer
-                val snRepository = application.container.snRepository
-                val wmRepository = application.container.wmRepository
-
-                CargaViewModel(
-                    repository = snRepository,
-                    wmRepository = wmRepository
-                )
-            }
-        }
-    }
 
     val syncStatus = wmRepository.outputWorkInfo
 

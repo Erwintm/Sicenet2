@@ -60,9 +60,11 @@ android {
 }
 
 dependencies {
+    implementation("com.google.code.gson:gson:2.10.1")
 
     // ✅ Compose BOM actual
     implementation(platform("androidx.compose:compose-bom:2024.09.00"))
+    implementation("com.google.firebase:firebase-crashlytics-buildtools:3.0.6")
     androidTestImplementation(platform("androidx.compose:compose-bom:2024.09.00"))
 
     implementation("androidx.activity:activity-compose:1.9.0")
@@ -111,4 +113,5 @@ dependencies {
 
     debugImplementation("androidx.compose.ui:ui-test-manifest")
     debugImplementation("androidx.compose.ui:ui-tooling")
+
 }
