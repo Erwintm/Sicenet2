@@ -96,7 +96,7 @@ class NetworkSNRepository(
             val xmlString = getCargaXml()
             val requestBody = xmlString.toRequestBody("text/xml; charset=utf-8".toMediaTypeOrNull())
             val response = snApiService.getCarga(requestBody)
-           // val xml = response.string()
+            val xml = response.string()
 
 
             val jsonContent = Regex("""<getCargaAcademicaByAlumnoResult>([^<]+)""").find(xml)?.groupValues?.get(1)
