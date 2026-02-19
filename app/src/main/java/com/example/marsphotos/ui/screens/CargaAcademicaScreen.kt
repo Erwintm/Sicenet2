@@ -30,6 +30,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavController
 import androidx.work.WorkInfo
 import com.example.marsphotos.model.CargaAcademica
 
@@ -37,7 +38,8 @@ import com.example.marsphotos.model.CargaAcademica
 
 @Composable
 fun CargaAcademicaScreen(
-    viewModel: CargaViewModel = viewModel()
+    viewModel: CargaViewModel = viewModel(),
+    navController: NavController
 ) {
 
     val state = viewModel.uiState

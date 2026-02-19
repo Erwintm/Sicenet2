@@ -9,6 +9,7 @@ import androidx.compose.ui.Modifier
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.example.marsphotos.ui.screens.CargaAcademicaScreen
 import com.example.marsphotos.ui.screens.LoginPantalla
 import com.example.marsphotos.ui.screens.MenuScreen
 import com.example.marsphotos.ui.screens.PerfilPantalla
@@ -30,10 +31,14 @@ class MainActivity : ComponentActivity() {
                         }
                         composable("perfil/{matricula}") { backStackEntry ->
                             val matricula = backStackEntry.arguments?.getString("matricula") ?: ""
-                            PerfilPantalla(matricula = matricula)
+                            PerfilPantalla(matricula = matricula,
+                                navController = navController)
                         }
                         composable("menu") {
                             MenuScreen(navController = navController)
+                        }
+                        composable("carga") {
+                            CargaAcademicaScreen(navController = navController)
                         }
                     }
                 }

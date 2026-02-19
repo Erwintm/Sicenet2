@@ -13,7 +13,7 @@ import androidx.navigation.NavController
 
 @Composable
 fun PerfilPantalla(
-
+    navController: NavController,
     matricula: String,
     viewModel: PerfilViewModel = viewModel(factory = PerfilViewModel.Factory)
 ) {
@@ -78,5 +78,18 @@ fun PerfilPantalla(
             }
             
         }
+        Spacer(modifier = Modifier.height(24.dp))
+
+        Button(
+            onClick = {
+                navController.navigate("menu") {
+                    popUpTo("perfil") { inclusive = true }
+                }
+            },
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text("Ir al menú")
+        }
+
     }
 }
