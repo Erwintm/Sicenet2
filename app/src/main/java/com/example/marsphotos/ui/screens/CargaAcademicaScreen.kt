@@ -26,21 +26,31 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.work.WorkInfo
+import com.example.marsphotos.MarsPhotosApplication
 import com.example.marsphotos.model.CargaAcademica
-
+import com.example.marsphotos.model.CargaViewModelFactory
 
 
 @Composable
 fun CargaAcademicaScreen(
-    viewModel: CargaViewModel = viewModel(),
     navController: NavController
 ) {
+
+    val application =
+        LocalContext.current.applicationContext as MarsPhotosApplication
+
+    val viewModel: CargaViewModel = viewModel(
+        factory = CargaViewModelFactory(
+            application.container.snRepository
+        )
+    )
 
     val state = viewModel.uiState
 
