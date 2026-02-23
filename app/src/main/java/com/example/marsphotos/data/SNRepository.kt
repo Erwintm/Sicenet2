@@ -15,6 +15,12 @@ import kotlinx.coroutines.flow.Flow
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.RequestBody.Companion.toRequestBody
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
+import com.example.marsphotos.model.KardexResponse
+import com.example.marsphotos.model.KardexRaw
+
 
 interface SNRepository {
     suspend fun acceso(m: String, p: String): String
@@ -22,8 +28,8 @@ interface SNRepository {
     suspend fun fetchCargaAcademica(): List<CargaAcademica>
     fun getCargaLocal(): Flow<List<CargaAcademica>>
 
-    // --- NUEVAS FUNCIONES PARA EL KARDEX ---
-    suspend fun fetchKardexRemote(): String
+    // --- EL CAMBIO ESTÁ AQUÍ ---
+    suspend fun fetchKardexRemote(): List<Kardex> // Cambiado de String a List<Kardex>
     fun obtenerKardexLocal(): Flow<List<Kardex>>
 }
 
@@ -50,29 +56,59 @@ class NetworkSNRepository(
         }
     }
 
+    private fun parsearKardex(jsonString: String): List<Kardex> {
+        return try {
+            val sdf = SimpleDateFormat("dd/MM/yyyy HH:mm:ss", Locale.getDefault())
+            val fechaActual = sdf.format(Date())
+
+            // 1. Convertimos el String JSON a los objetos KardexRaw que creaste
+            val type = object : TypeToken<KardexResponse>() {}.type
+            val response: KardexResponse = Gson().fromJson(jsonString, type)
+
+            // 2. "Mapeamos" de KardexRaw (servidor) a Kardex (tu base de datos)
+            response.lstKardex.map { raw ->
+                Kardex(
+                    clvMateria = raw.ClvMat ?: "",
+                    materia = raw.Materia ?: "",
+                    calificacion = raw.Calif ?: 0,
+                    acreditacion = raw.Acred ?: "",
+                    periodo = "${raw.P1 ?: ""} ${raw.A1 ?: ""}".trim(),
+                    fechaSincronizacion = ""
+                )
+            }
+        } catch (e: Exception) {
+            Log.e("KARDEX_PARSER", "Error parseando JSON: ${e.message}")
+            emptyList() // Si algo falla, regresamos lista vacía para que no truene la app
+        }
+    }
+
     // --- IMPLEMENTACIÓN KARDEX ---
 
-    override suspend fun fetchKardexRemote(): String {
+    // Cambia el retorno de String a List<Kardex>
+    override suspend fun fetchKardexRemote(): List<Kardex> {
         return try {
             val xmlString = getKardexXml()
-            // Forzamos el charset utf-8
             val requestBody = xmlString.toRequestBody("text/xml; charset=utf-8".toMediaType())
-
             val response = snApiService.getKardex(requestBody)
-            val xml = response.string()
+            val xmlCompleto = response.string()
 
-            // Si llegamos aquí, el código es 200 OK
-            Log.d("KARDEX_DEBUG", "¡Respuesta recibida! XML: ${xml.take(100)}...")
+            // Sacamos el JSON que viene dentro del XML
+            val regex = Regex("""<getAllKardexConPromedioByAlumnoResult>([\s\S]*?)</getAllKardexConPromedioByAlumnoResult>""", RegexOption.IGNORE_CASE)
+            val contenidoJson = regex.find(xmlCompleto)?.groupValues?.get(1) ?: ""
 
-            Regex("""<getAllKardexConPromedioByAlumnoResult>([^<]+)""").find(xml)?.groupValues?.get(1) ?: ""
-        } catch (e: retrofit2.HttpException) {
-            // Esto nos dirá qué dice el servidor cuando da el error 500
-            val errorBody = e.response()?.errorBody()?.string()
-            Log.e("KARDEX_DEBUG", "Error 500 - Detalle del servidor: $errorBody")
-            ""
+            if (contenidoJson.isNotEmpty()) {
+                val lista = parsearKardex(contenidoJson)
+                if (lista.isNotEmpty()) {
+                    // GUARDAR EN LA DB (SNDao)
+                    snDao.insertarKardex(lista)
+                    Log.d("KARDEX_DEBUG", "¡POR FIN! ${lista.size} materias guardadas en Room.")
+                    return lista
+                }
+            }
+            emptyList()
         } catch (e: Exception) {
-            Log.e("KARDEX_DEBUG", "Error genérico: ${e.message}")
-            ""
+            Log.e("KARDEX_DEBUG", "Error: ${e.message}")
+            emptyList()
         }
     }
 
@@ -122,3 +158,4 @@ class NetworkSNRepository(
 
     override fun getCargaLocal(): Flow<List<CargaAcademica>> = snDao.obtenerCarga()
 }
+

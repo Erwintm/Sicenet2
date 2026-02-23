@@ -11,16 +11,27 @@ class AddCookiesInterceptor(private val context: Context) : Interceptor {
         val builder = chain.request().newBuilder()
         val prefs = PreferenceManager.getDefaultSharedPreferences(context)
 
+        // Recuperamos el set de cookies guardadas
+        val cookies = prefs.getStringSet(PREF_COOKIES, HashSet()) ?: HashSet()
 
-        val cookies = prefs.getStringSet(PREF_COOKIES, null)
+        if (cookies.isNotEmpty()) {
+            // BUSCAMOS ESPECÍFICAMENTE LA SESIÓN DE ASP.NET
+            // Esta es la que nos da permiso de ver el Kardex
+            val sessionCookie = cookies.find { it.contains("ASP.NET_SessionId", ignoreCase = true) }
 
-        if (!cookies.isNullOrEmpty()) {
-            val cookieString = cookies.joinToString(separator = "; ") { it.split(";")[0] }
-            builder.addHeader("Cookie", cookieString)
-
-            Log.d("COOKIES_REPORTE", "ENVIANDO AL SERVIDOR: $cookieString")
+            if (sessionCookie != null) {
+                // Si la encontramos, la mandamos LIMPIA (Nombre=Valor)
+                val cleanCookie = sessionCookie.split(";")[0]
+                builder.addHeader("Cookie", cleanCookie)
+                Log.d("COOKIES_REPORTE", ">>> MANDANDO SESIÓN (ELIMINA ERROR 500): $cleanCookie")
+            } else {
+                // Si no hay sesión (porque apenas nos vamos a loguear), mandamos la anónima
+                val anonymousCookie = cookies.first().split(";")[0]
+                builder.addHeader("Cookie", anonymousCookie)
+                Log.d("COOKIES_REPORTE", ">>> MANDANDO COOKIE INICIAL: $anonymousCookie")
+            }
         } else {
-            Log.e("COOKIES_REPORTE", "¡ATENCIÓN! No hay cookies para enviar.")
+            Log.w("COOKIES_REPORTE", ">>> SIN COOKIES: Petición enviada limpia.")
         }
 
         return chain.proceed(builder.build())

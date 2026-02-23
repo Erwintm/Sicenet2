@@ -15,7 +15,7 @@ interface AppContainer {
 }
 
 class DefaultAppContainer(private val applicationContext: Context) : AppContainer {
-    private val baseUrlSN = "https://sicenet.surguanajuato.tecnm.mx"
+    private val baseUrlSN = "https://sicenet.surguanajuato.tecnm.mx/"
 
 
     private val database: SNDatabase by lazy {
@@ -25,22 +25,8 @@ class DefaultAppContainer(private val applicationContext: Context) : AppContaine
 
     private val client: OkHttpClient by lazy {
         OkHttpClient.Builder()
-            // Mantenemos tus interceptores por si los usas para logs,
-            // pero el CookieJar será el que mande realmente.
             .addInterceptor(AddCookiesInterceptor(applicationContext))
             .addInterceptor(ReceivedCookiesInterceptor(applicationContext))
-            // AGREGA ESTO: Un manejador de cookies persistente en memoria
-            .cookieJar(object : okhttp3.CookieJar {
-                private val cookieStore = HashMap<okhttp3.HttpUrl, List<okhttp3.Cookie>>()
-
-                override fun saveFromResponse(url: okhttp3.HttpUrl, cookies: List<okhttp3.Cookie>) {
-                    cookieStore[url] = cookies
-                }
-
-                override fun loadForRequest(url: okhttp3.HttpUrl): List<okhttp3.Cookie> {
-                    return cookieStore[url] ?: ArrayList()
-                }
-            })
             .build()
     }
 

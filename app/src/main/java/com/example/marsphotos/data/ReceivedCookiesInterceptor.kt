@@ -10,18 +10,26 @@ import java.io.IOException
 class ReceivedCookiesInterceptor(private val context: Context) : Interceptor {
 
     @Throws(IOException::class)
+    // En ReceivedCookiesInterceptor.kt
+    // En ReceivedCookiesInterceptor.kt
     override fun intercept(chain: Interceptor.Chain): Response {
-        val originalResponse: Response = chain.proceed(chain.request())
+        val originalResponse = chain.proceed(chain.request())
+        val setCookieHeaders = originalResponse.headers("Set-Cookie")
 
+        if (setCookieHeaders.isNotEmpty()) {
+            val prefs = PreferenceManager.getDefaultSharedPreferences(context)
+            // 1. Recuperamos las que ya tenemos guardadas
+            val existingCookies = prefs.getStringSet(AddCookiesInterceptor.PREF_COOKIES, HashSet()) ?: HashSet()
+            val newCookies = HashSet<String>(existingCookies)
 
-        if (originalResponse.headers("Set-Cookie").isNotEmpty()) {
-            val cookies = originalResponse.headers("Set-Cookie").toMutableSet()
+            // 2. Solo agregamos, NO reemplazamos todo
+            for (header in setCookieHeaders) {
+                newCookies.add(header)
+            }
 
-            val success = PreferenceManager.getDefaultSharedPreferences(context).edit()
-                .putStringSet(AddCookiesInterceptor.PREF_COOKIES, cookies)
-                .commit()
-
-            Log.d("COOKIES_REPORTE", "COOKIES GUARDADAS: $success")
+            // 3. Guardado atómico
+            prefs.edit().putStringSet(AddCookiesInterceptor.PREF_COOKIES, newCookies).commit()
+            Log.d("COOKIES_REPORTE", "COOKIES ACTUALIZADAS: ${newCookies.size} en total")
         }
 
         return originalResponse
