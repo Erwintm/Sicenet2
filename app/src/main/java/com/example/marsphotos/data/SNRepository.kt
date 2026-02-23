@@ -73,7 +73,7 @@ class NetworkSNRepository(
                     calificacion = raw.Calif ?: 0,
                     acreditacion = raw.Acred ?: "",
                     periodo = "${raw.P1 ?: ""} ${raw.A1 ?: ""}".trim(),
-                    fechaSincronizacion = ""
+                    fechaSincronizacion = fechaActual
                 )
             }
         } catch (e: Exception) {

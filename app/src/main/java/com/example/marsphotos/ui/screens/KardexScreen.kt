@@ -56,7 +56,11 @@ fun KardexScreen(
                     colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.tertiaryContainer),
                     modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp)
                 ) {
-
+                    Text(
+                        text = "Última sincronización: ${it.fechaSincronizacion}",
+                        modifier = Modifier.padding(8.dp),
+                        style = MaterialTheme.typography.labelMedium
+                    )
                 }
             }
 
