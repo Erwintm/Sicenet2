@@ -20,7 +20,7 @@ class DefaultAppContainer(private val applicationContext: Context) : AppContaine
 
     private val database: SNDatabase by lazy {
         SNDatabase.getDatabase(applicationContext)
-    }
+    } 
 
 
     private val client: OkHttpClient by lazy {
