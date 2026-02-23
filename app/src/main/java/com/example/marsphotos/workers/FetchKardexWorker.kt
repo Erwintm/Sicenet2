@@ -1,24 +1,27 @@
-package com.example.marsphotos.workers
-
+package com.example.marsphotos.data
 
 import android.content.Context
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
-import androidx.work.workDataOf
-import com.example.marsphotos.data.SNRepository
+import com.example.marsphotos.MarsPhotosApplication
 
 class FetchKardexWorker(
-    context: Context,
-    workerParams: WorkerParameters,
-    private val snRepository: SNRepository
-) : CoroutineWorker(context, workerParams) {
+    ctx: Context,
+    params: WorkerParameters
+) : CoroutineWorker(ctx, params) {
+
     override suspend fun doWork(): Result {
+        val repository = (applicationContext as MarsPhotosApplication).container.snRepository
         return try {
-            // Nota: El repo aún no tiene esta función, la haremos en el paso 4
-            val jsonResult = snRepository.fetchKardexRemote()
-            if (jsonResult.isNotEmpty()) {
-                Result.success(workDataOf("KEY_KARDEX_JSON" to jsonResult))
-            } else Result.failure()
-        } catch (e: Exception) { Result.retry() }
+            val json = repository.fetchKardexRemote()
+            if (json.isNotEmpty()) {
+                // Aquí podrías guardar un archivo temporal o pasarlo al siguiente worker
+                Result.success()
+            } else {
+                Result.retry()
+            }
+        } catch (e: Exception) {
+            Result.failure()
+        }
     }
 }

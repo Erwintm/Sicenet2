@@ -52,15 +52,7 @@ fun getCalifFinalXml(): String = """
     </soap:Envelope>
 """.trimIndent()
 
-fun getKardexXml(): String = """
-    <soap:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
-      <soap:Body>
-        <getAllKardexConPromedioByAlumno xmlns="http://tempuri.org/">
-          <aluLineamiento>1</aluLineamiento>
-        </getAllKardexConPromedioByAlumno>
-      </soap:Body>
-    </soap:Envelope>
-""".trimIndent()
+fun getKardexXml(): String = """<?xml version="1.0" encoding="utf-8"?><soap:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/"><soap:Body><getAllKardexConPromedioByAlumno xmlns="http://tempuri.org/"><aluLineamiento>1</aluLineamiento></getAllKardexConPromedioByAlumno></soap:Body></soap:Envelope>""".trim()// Usamos .trim() para evitar espacios en blanco al inicio o final
 
 // Agregamos esta para cumplir con "Calificaciones por unidad"
 fun getCalifUnidadesXml(): String = """
@@ -102,7 +94,7 @@ interface SICENETWService {
         "Content-Type: text/xml; charset=utf-8",
         "SOAPAction: \"http://tempuri.org/getAllKardexConPromedioByAlumno\""
     )
-    @POST("/ws/wsalumnos.asmx")
+    @POST("ws/wsalumnos.asmx")
     suspend fun getKardex(@Body soap: RequestBody): ResponseBody
 
     @Headers(

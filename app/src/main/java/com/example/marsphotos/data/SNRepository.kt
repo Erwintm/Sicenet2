@@ -55,14 +55,23 @@ class NetworkSNRepository(
     override suspend fun fetchKardexRemote(): String {
         return try {
             val xmlString = getKardexXml()
+            // Forzamos el charset utf-8
             val requestBody = xmlString.toRequestBody("text/xml; charset=utf-8".toMediaType())
+
             val response = snApiService.getKardex(requestBody)
             val xml = response.string()
 
-            // Regex para extraer el JSON del resultado SOAP
+            // Si llegamos aquí, el código es 200 OK
+            Log.d("KARDEX_DEBUG", "¡Respuesta recibida! XML: ${xml.take(100)}...")
+
             Regex("""<getAllKardexConPromedioByAlumnoResult>([^<]+)""").find(xml)?.groupValues?.get(1) ?: ""
+        } catch (e: retrofit2.HttpException) {
+            // Esto nos dirá qué dice el servidor cuando da el error 500
+            val errorBody = e.response()?.errorBody()?.string()
+            Log.e("KARDEX_DEBUG", "Error 500 - Detalle del servidor: $errorBody")
+            ""
         } catch (e: Exception) {
-            Log.e("SICENET_KARDEX", "Error remoto: ${e.message}")
+            Log.e("KARDEX_DEBUG", "Error genérico: ${e.message}")
             ""
         }
     }
