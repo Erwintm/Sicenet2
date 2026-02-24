@@ -6,9 +6,13 @@ import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.example.marsphotos.model.CargaViewModel
+import com.example.marsphotos.model.CargaViewModelFactory
 import com.example.marsphotos.ui.screens.CargaAcademicaScreen
 import com.example.marsphotos.ui.screens.LoginPantalla
 import com.example.marsphotos.ui.screens.MenuScreen
@@ -51,11 +55,16 @@ class MainActivity : ComponentActivity() {
                             MenuScreen(navController = navController)
                         }
 
-                        // 4. Carga Académica (La que hace tu amigo)
                         composable("carga") {
-                            CargaAcademicaScreen(navController = navController)
+                            val repository = (LocalContext.current.applicationContext as MarsPhotosApplication).container.snRepository
+                            val viewModel: CargaViewModel = viewModel(
+                                factory = CargaViewModelFactory(repository)
+                            )
+                            CargaAcademicaScreen(
+                                navController = navController,
+                                viewModel = viewModel
+                            )
                         }
-
                         // 5. Kardex Escolar (La que estás haciendo tú)
                         composable("kardex") {
                             KardexScreen(navController = navController)

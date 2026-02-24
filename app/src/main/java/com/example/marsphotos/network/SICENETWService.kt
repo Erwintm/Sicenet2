@@ -1,11 +1,14 @@
 package com.example.marsphotos.network
 
+import com.example.marsphotos.data.CargaSoapResponse
 import com.example.marsphotos.model.EnvelopeCarga
 import okhttp3.RequestBody
 import okhttp3.ResponseBody
 import retrofit2.http.Body
 import retrofit2.http.Headers
 import retrofit2.http.POST
+import retrofit2.Response
+
 
 // --- FUNCIONES GENERADORAS DE XML ---
 
@@ -96,7 +99,7 @@ interface SICENETWService {
         "SOAPAction: \"http://tempuri.org/getCargaAcademicaByAlumno\""
     )
     @POST("ws/wsalumnos.asmx")
-    suspend fun getCarga(@Body soap: RequestBody): EnvelopeCarga
+    suspend fun getCarga(@Body body: RequestBody): Response<CargaSoapResponse>
 
     @Headers(
         "Content-Type: text/xml; charset=utf-8",

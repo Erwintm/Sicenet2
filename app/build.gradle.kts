@@ -60,58 +60,57 @@ android {
 }
 
 dependencies {
+    // Gson
     implementation("com.google.code.gson:gson:2.10.1")
 
-    // ✅ Compose BOM actual
-    implementation(platform("androidx.compose:compose-bom:2024.09.00"))
-    implementation("com.google.firebase:firebase-crashlytics-buildtools:3.0.6")
-    androidTestImplementation(platform("androidx.compose:compose-bom:2024.09.00"))
+    // ✅ Compose BOM: Cambiado a Junio 2024 para compatibilidad con AGP 8.5.2
+    implementation(platform("androidx.compose:compose-bom:2024.06.00"))
 
-    implementation("androidx.activity:activity-compose:1.9.0")
+    // Eliminadas versiones manuales 1.10.3 que causaban conflicto
     implementation("androidx.compose.material3:material3")
     implementation("androidx.compose.ui:ui")
     implementation("androidx.compose.ui:ui-tooling-preview")
-    implementation("androidx.core:core-ktx:1.13.1")
+    implementation("androidx.activity:activity-compose:1.9.0")
+    implementation("androidx.constraintlayout:constraintlayout:2.1.4")
 
-    // Lifecycle
+    // ✅ Lifecycle: Ajustado a 2.8.4 (Estable y compatible)
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.8.4")
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.8.4")
     implementation("androidx.lifecycle:lifecycle-runtime-compose:2.8.4")
+    implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.8.4")
 
-    // Retrofit
-    implementation("com.jakewharton.retrofit:retrofit2-kotlinx-serialization-converter:1.0.0")
+    // ✅ Corrutinas: Esenciales para MutableStateFlow y launch
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.8.1")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.8.1")
+
+    // Core-KTX compatible
+    implementation("androidx.core:core-ktx:1.13.1")
+
+    // Retrofit & Serialization
     implementation("com.squareup.retrofit2:retrofit:2.9.0")
-    implementation("com.squareup.retrofit2:converter-simplexml:2.9.0")
+    implementation("com.squareup.retrofit2:converter-gson:2.9.0") // Recomendado para tu JSON
     implementation("com.squareup.retrofit2:converter-scalars:2.9.0")
-
-    // Coil
-    implementation("io.coil-kt:coil-compose:2.6.0")
-
-    // Serialization
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.3")
-
-    // WorkManager
-    implementation("androidx.work:work-runtime-ktx:2.9.0")
-
-    // Navigation (version consistente)
-    implementation("androidx.navigation:navigation-compose:2.7.7")
-
-    // Room (CORRECTO)
+    implementation("com.squareup.retrofit2:converter-simplexml:2.9.0")
+    // Room
     implementation("androidx.room:room-runtime:2.6.1")
     implementation("androidx.room:room-ktx:2.6.1")
+    implementation("androidx.test.espresso:espresso-core:3.7.0")
+    implementation("com.google.android.gms:play-services-vision:20.1.3")
+    implementation("androidx.work:work-runtime-ktx:2.9.1")
     kapt("androidx.room:room-compiler:2.6.1")
 
-    // ❌ ELIMINADO (esto causaba el error)
-    // implementation("com.google.firebase:firebase-crashlytics-buildtools:3.0.6")
+    // Otros
+    implementation("io.coil-kt:coil-compose:2.6.0")
+    implementation("androidx.navigation:navigation-compose:2.7.7")
 
+    // Testing
     testImplementation("junit:junit:4.13.2")
-    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.7.3")
-
-    androidTestImplementation("androidx.compose.ui:ui-test-junit4")
-    androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
-    androidTestImplementation("androidx.test.ext:junit:1.1.5")
-
-    debugImplementation("androidx.compose.ui:ui-test-manifest")
     debugImplementation("androidx.compose.ui:ui-tooling")
-
+    debugImplementation("androidx.compose.ui:ui-test-manifest")
+    implementation("org.simpleframework:simple-xml:2.7.1") {
+        exclude(group = "stax", module = "stax-api")
+        exclude(group = "xpp3", module = "xpp3")
+        exclude(group = "stax", module = "stax")
+    }
 }

@@ -146,12 +146,36 @@ class NetworkSNRepository(
     override suspend fun fetchCargaAcademica(): List<CargaAcademica> {
         return try {
             val xmlString = getCargaXml()
-            val requestBody = xmlString.toRequestBody("text/xml; charset=utf-8".toMediaType())
+            val requestBody = xmlString.toRequestBody("text/xml; charset=utf-8".toMediaTypeOrNull())
+
+
             val response = snApiService.getCarga(requestBody)
-            val json = response.body?.response?.result ?: return emptyList()
+
+            if (!response.isSuccessful) {
+                Log.e("DEBUG_CARGA", "Error en servidor: ${response.code()}")
+                return emptyList()
+            }
+
+
+            val rawJson = response.body()?.body?.getCargaResponse?.result ?: return emptyList()
+
+            // 3. Limpiar el JSON si viene envuelto en etiquetas <string> (común en Sicenet)
+            val cleanJson = if (rawJson.contains("<string")) {
+                rawJson.substringAfter(">").substringBeforeLast("</string>")
+            } else {
+                rawJson
+            }
+
+            // 4. Parsear con Gson
             val listaType = object : TypeToken<List<CargaAcademica>>() {}.type
-            Gson().fromJson(json, listaType)
+            val resultado: List<CargaAcademica> = Gson().fromJson(cleanJson, listaType)
+
+            Log.d("DEBUG_CARGA", "¡Éxito! Materias parseadas: ${resultado.size}")
+            resultado
+
         } catch (e: Exception) {
+            Log.e("DEBUG_CARGA", "Error fatal en fetchCargaAcademica: ${e.message}")
+            e.printStackTrace()
             emptyList()
         }
     }

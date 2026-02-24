@@ -7,8 +7,9 @@ import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
 import com.example.marsphotos.data.SNDao
 import com.example.marsphotos.model.CargaAcademica
-import com.google.firebase.crashlytics.buildtools.reloc.com.google.common.reflect.TypeToken
+
 import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
 
 import java.util.Date
 import java.text.SimpleDateFormat
