@@ -54,7 +54,7 @@ fun MateriaNotaCard(nombre: String, unidades: String) {
 
             // Intentamos separar por coma, espacio o pipe (|)
             val listaNotas = unidades.split(",").filter { it.isNotBlank() }
-            
+
 
             if (listaNotas.isEmpty()) {
                 Text("Sin calificaciones aún", style = MaterialTheme.typography.bodySmall, color = Color.Gray)

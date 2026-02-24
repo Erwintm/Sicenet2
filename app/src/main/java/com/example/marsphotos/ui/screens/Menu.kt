@@ -21,10 +21,12 @@ import com.example.marsphotos.model.MenuOption
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MenuScreen(navController: NavController) {
+    // Lista de opciones actualizada con las 4 secciones principales
     val options = listOf(
         MenuOption("Carga\nAcadémica", "carga", Color(0xFF1976D2)),
         MenuOption("Kardex\nEscolar", "kardex", Color(0xFF388E3C)),
-        MenuOption("Calificaciones\npor Unidad", "notas", Color(0xFFFBC02D))
+        MenuOption("Calificaciones\npor Unidad", "notas", Color(0xFFFBC02D)),
+        MenuOption("Calificaciones\nFinales", "finales", Color(0xFFE64A19))
     )
 
     Scaffold(
@@ -59,7 +61,7 @@ fun MenuCard(option: MenuOption, onClick: () -> Unit) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .height(140.dp) // Un poco más alto para que luzca el texto
+            .height(140.dp)
             .clickable { onClick() },
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(

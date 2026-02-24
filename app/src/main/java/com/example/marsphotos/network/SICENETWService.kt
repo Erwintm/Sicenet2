@@ -56,16 +56,14 @@ fun getKardexXml(): String = """
 </soap:Envelope>
 """.trimIndent()
 
-fun getCalifFinalXml(): String = """
-    <?xml version="1.0" encoding="utf-8"?>
-    <soap:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
-      <soap:Body>
-        <getAllCalifFinalByAlumnos xmlns="http://tempuri.org/">
-          <bytModEducativo>1</bytModEducativo> 
-        </getAllCalifFinalByAlumnos>
-      </soap:Body>
-    </soap:Envelope>
-""".trimIndent()
+fun getCalifFinalXml(modEducativo: Int = 1): String = """<?xml version="1.0" encoding="utf-8"?>
+<soap:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
+  <soap:Body>
+    <getAllCalifFinalByAlumnos xmlns="http://tempuri.org/">
+      <bytModEducativo>$modEducativo</bytModEducativo>
+    </getAllCalifFinalByAlumnos>
+  </soap:Body>
+</soap:Envelope>""".trimIndent()
 
 fun getNotasUnidadesXml(): String = """<?xml version="1.0" encoding="utf-8"?>
 <soap:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
@@ -113,7 +111,7 @@ interface SICENETWService {
         "SOAPAction: \"http://tempuri.org/getAllCalifFinalByAlumnos\""
     )
     @POST("ws/wsalumnos.asmx")
-    suspend fun getCalifFinal(@Body soap: RequestBody): ResponseBody
+    suspend fun getCalifFinales(@Body soap: RequestBody): ResponseBody
 
     @Headers(
         "Content-Type: text/xml; charset=utf-8",

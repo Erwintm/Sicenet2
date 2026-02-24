@@ -1,7 +1,10 @@
 package com.example.marsphotos.data
 
 import android.util.Log
+import com.example.marsphotos.model.CalifFinal
 import com.example.marsphotos.model.CargaAcademica
+import com.example.marsphotos.model.FinalRaw
+import com.example.marsphotos.model.FinalResponse
 import com.example.marsphotos.model.Kardex // Importante importar tu nuevo modelo
 import com.example.marsphotos.model.ProfileStudent
 import com.example.marsphotos.network.SICENETWService
@@ -23,6 +26,7 @@ import com.example.marsphotos.model.KardexRaw
 import com.example.marsphotos.model.MateriaUnidades
 import com.example.marsphotos.model.UnidadesRaw
 import com.example.marsphotos.model.UnidadesResponse
+import com.example.marsphotos.network.getCalifFinalXml
 import com.example.marsphotos.network.getNotasUnidadesXml
 
 
@@ -37,6 +41,8 @@ interface SNRepository {
     fun obtenerKardexLocal(): Flow<List<Kardex>>
 
     suspend fun fetchNotasUnidadesRemote(): List<MateriaUnidades>
+
+    suspend fun fetchCalifFinalesRemote(): List<CalifFinal>
 }
 
 class NetworkSNRepository(
@@ -243,6 +249,44 @@ class NetworkSNRepository(
             emptyList()
         }
     }
+
+
+
+    override suspend fun fetchCalifFinalesRemote(): List<CalifFinal> {
+        return try {
+            val xmlString = getCalifFinalXml() // Por defecto usa 1
+            val requestBody = xmlString.toRequestBody("text/xml; charset=utf-8".toMediaType())
+            val response = snApiService.getCalifFinales(requestBody)
+            val xmlCompleto = response.string()
+
+            val regex = Regex("""<getAllCalifFinalByAlumnosResult>([\s\S]*?)</getAllCalifFinalByAlumnosResult>""", RegexOption.IGNORE_CASE)
+            val contenidoJson = regex.find(xmlCompleto)?.groupValues?.get(1) ?: ""
+
+            if (contenidoJson.isNotEmpty() && contenidoJson != "null") {
+                val gson = Gson()
+                val listaRaw: List<FinalRaw> = try {
+                    val res = gson.fromJson(contenidoJson, FinalResponse::class.java)
+                    res.lstCalificacionFinal
+                } catch (e: Exception) {
+                    val type = object : TypeToken<List<FinalRaw>>() {}.type
+                    gson.fromJson(contenidoJson, type)
+                }
+
+                listaRaw.map { raw ->
+                    CalifFinal(
+                        materia = raw.materia ?: "",
+                        grupo = raw.grupo ?: "",
+                        calificacion = raw.calif ?: 0,
+                        acreditacion = raw.acred ?: ""
+                    )
+                }
+            } else emptyList()
+        } catch (e: Exception) {
+            Log.e("FINAL_DEBUG", "Error: ${e.message}")
+            emptyList()
+        }
+    }
+
     override fun getCargaLocal(): Flow<List<CargaAcademica>> = snDao.obtenerCarga()
 }
 
