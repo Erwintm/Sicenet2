@@ -18,8 +18,12 @@ import com.example.marsphotos.ui.screens.LoginPantalla
 import com.example.marsphotos.ui.screens.MenuScreen
 import com.example.marsphotos.ui.screens.PerfilPantalla
 import com.example.marsphotos.ui.screens.KardexScreen // Asegúrate de que esta importación esté
+import com.example.marsphotos.ui.screens.NotasUnidadesScreen
 // Importación para el futuro
 import com.example.marsphotos.ui.theme.MarsPhotosTheme
+import com.example.marsphotos.ui.screens.NotasUnidadesViewModel
+import com.example.marsphotos.ui.screens.NotasUnidadesViewModelFactory
+
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -71,6 +75,15 @@ class MainActivity : ComponentActivity() {
                         }
 
                         // 6. Calificaciones por Unidad
+                        composable("notas") {
+                            val repository = (LocalContext.current.applicationContext as MarsPhotosApplication).container.snRepository
+                            val viewModel: NotasUnidadesViewModel = viewModel(
+                                factory = NotasUnidadesViewModelFactory(repository)
+                            )
+                            NotasUnidadesScreen(viewModel = viewModel)
+                        }
+
+
 
                     }
                 }

@@ -67,14 +67,12 @@ fun getCalifFinalXml(): String = """
     </soap:Envelope>
 """.trimIndent()
 
-fun getCalifUnidadesXml(): String = """
-    <?xml version="1.0" encoding="utf-8"?>
-    <soap:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
-      <soap:Body>
-        <getCalifUnidadesByAlumno xmlns="http://tempuri.org/" />
-      </soap:Body>
-    </soap:Envelope>
-""".trimIndent()
+fun getNotasUnidadesXml(): String = """<?xml version="1.0" encoding="utf-8"?>
+<soap:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
+  <soap:Body>
+    <getCalifUnidadesByAlumno xmlns="http://tempuri.org/" />
+  </soap:Body>
+</soap:Envelope>""".trimIndent()
 
 
 // --- INTERFAZ DEL SERVICIO ---
@@ -122,5 +120,5 @@ interface SICENETWService {
         "SOAPAction: \"http://tempuri.org/getCalifUnidadesByAlumno\""
     )
     @POST("ws/wsalumnos.asmx")
-    suspend fun getCalifUnidades(@Body soap: RequestBody): ResponseBody
+    suspend fun getNotasUnidades(@Body soap: RequestBody): ResponseBody
 }
