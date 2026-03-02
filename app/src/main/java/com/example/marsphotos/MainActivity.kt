@@ -17,13 +17,20 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.marsphotos.model.CargaViewModel
 import com.example.marsphotos.model.CargaViewModelFactory
+import com.example.marsphotos.ui.screens.CalifFinalScreen
+import com.example.marsphotos.ui.screens.CalifFinalViewModel
+import com.example.marsphotos.ui.screens.CalifFinalViewModelFactory
 import com.example.marsphotos.ui.screens.CargaAcademicaScreen
 import com.example.marsphotos.ui.screens.LoginPantalla
 import com.example.marsphotos.ui.screens.MenuScreen
 import com.example.marsphotos.ui.screens.PerfilPantalla
 import com.example.marsphotos.ui.screens.KardexScreen // Asegúrate de que esta importación esté
+import com.example.marsphotos.ui.screens.NotasUnidadesScreen
 // Importación para el futuro
 import com.example.marsphotos.ui.theme.MarsPhotosTheme
+import com.example.marsphotos.ui.screens.NotasUnidadesViewModel
+import com.example.marsphotos.ui.screens.NotasUnidadesViewModelFactory
+
 
 
 class MainActivity : ComponentActivity() {
@@ -83,6 +90,26 @@ class MainActivity : ComponentActivity() {
                         }
 
                         // 6. Calificaciones por Unidad
+                        composable("notas") {
+                            val repository = (LocalContext.current.applicationContext as MarsPhotosApplication).container.snRepository
+                            val viewModel: NotasUnidadesViewModel = viewModel(
+                                factory = NotasUnidadesViewModelFactory(repository)
+                            )
+                            NotasUnidadesScreen(viewModel = viewModel)
+                        }
+
+                        composable("finales") {
+                            val repository = (LocalContext.current.applicationContext as MarsPhotosApplication).container.snRepository
+                            val viewModel: CalifFinalViewModel = viewModel(
+                                factory = CalifFinalViewModelFactory(repository)
+                            )
+                            CalifFinalScreen(
+                                navController = navController,
+                                viewModel = viewModel
+                            )
+                        }
+
+
 
                     }
                 }
