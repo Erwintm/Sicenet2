@@ -1,7 +1,10 @@
 package com.example.marsphotos.data
 
 import android.util.Log
+import com.example.marsphotos.model.CalifFinal
 import com.example.marsphotos.model.CargaAcademica
+import com.example.marsphotos.model.FinalRaw
+import com.example.marsphotos.model.FinalResponse
 import com.example.marsphotos.model.Kardex // Importante importar tu nuevo modelo
 import com.example.marsphotos.model.ProfileStudent
 import com.example.marsphotos.network.SICENETWService
@@ -20,6 +23,11 @@ import java.util.Date
 import java.util.Locale
 import com.example.marsphotos.model.KardexResponse
 import com.example.marsphotos.model.KardexRaw
+import com.example.marsphotos.model.MateriaUnidades
+import com.example.marsphotos.model.UnidadesRaw
+import com.example.marsphotos.model.UnidadesResponse
+import com.example.marsphotos.network.getCalifFinalXml
+import com.example.marsphotos.network.getNotasUnidadesXml
 
 
 interface SNRepository {
@@ -31,8 +39,11 @@ interface SNRepository {
     // --- EL CAMBIO ESTÁ AQUÍ ---
     suspend fun fetchKardexRemote(): List<Kardex> // Cambiado de String a List<Kardex>
     fun obtenerKardexLocal(): Flow<List<Kardex>>
-    suspend fun insertLocalCarga(materias: List<CargaAcademica>)
 
+    suspend fun fetchNotasUnidadesRemote(): List<MateriaUnidades>
+
+    suspend fun fetchCalifFinalesRemote(): List<CalifFinal>
+    suspend fun insertLocalCarga(materias: List<CargaAcademica>)
 }
 
 class NetworkSNRepository(
@@ -116,8 +127,6 @@ class NetworkSNRepository(
 
     override fun obtenerKardexLocal(): Flow<List<Kardex>> = snDao.obtenerKardex()
 
-
-
     // --- EL RESTO DE TUS FUNCIONES (Profile, Carga, etc) ---
 
     override suspend fun profile(m: String): ProfileStudent {
@@ -185,7 +194,7 @@ class NetworkSNRepository(
     }
     override suspend fun insertLocalCarga(materias: List<CargaAcademica>) {
         try {
-            // Ahora estas llamadas ya no marcarán error de "suspend function call"
+
             snDao.borrarCarga()
 
             snDao.insertarCarga(materias)
@@ -193,6 +202,102 @@ class NetworkSNRepository(
             Log.d("REPO_LOCAL", "Se insertaron ${materias.size} materias en Room")
         } catch (e: Exception) {
             Log.e("REPO_LOCAL", "Error al insertar en BD local: ${e.message}")
+        }
+    }
+
+
+    private fun parsearNotas(jsonString: String): List<MateriaUnidades> {
+        return try {
+            val gson = Gson()
+
+            val listaResult: List<UnidadesRaw> = try {
+                val type = object : TypeToken<UnidadesResponse>() {}.type
+                val res: UnidadesResponse = gson.fromJson(jsonString, type)
+                res.lstCalificacionUnidades
+            } catch (e: Exception) {
+                val typeList = object : TypeToken<List<UnidadesRaw>>() {}.type
+                gson.fromJson(jsonString, typeList)
+            }
+
+            // AGREGAMOS EL RETURN AQUÍ PARA QUE LA FUNCIÓN DEVUELVA LA LISTA
+            return listaResult.map { raw ->
+                // Juntamos todas las C1..C7. Si son "null", ponemos un guion o vacío.
+                val notas = listOfNotNull(raw.C1, raw.C2, raw.C3, raw.C4, raw.C5, raw.C6, raw.C7)
+                    .joinToString(",") { if (it == "null" || it.isBlank()) "-" else it }
+
+                Log.d("NOTAS_DEBUG", "Materia: ${raw.Materia} -> Unidades: $notas")
+
+                MateriaUnidades(
+                    materia = raw.Materia ?: "Materia",
+                    unidades = notas
+                )
+            }
+
+        } catch (e: Exception) {
+            Log.e("NOTAS_DEBUG", "Error parseando JSON de notas: ${e.message}")
+            emptyList()
+        }
+    }
+
+
+    override suspend fun fetchNotasUnidadesRemote(): List<MateriaUnidades> {
+        return try {
+            val xmlString = getNotasUnidadesXml()
+            val requestBody = xmlString.toRequestBody("text/xml; charset=utf-8".toMediaType())
+            val response = snApiService.getNotasUnidades(requestBody)
+            val xmlCompleto = response.string()
+
+            // Extraer contenido del XML
+            val regex = Regex("""<getCalifUnidadesByAlumnoResult>([\s\S]*?)</getCalifUnidadesByAlumnoResult>""", RegexOption.IGNORE_CASE)
+            val contenidoJson = regex.find(xmlCompleto)?.groupValues?.get(1) ?: ""
+
+            if (contenidoJson.isNotEmpty() && contenidoJson != "null") {
+                val lista = parsearNotas(contenidoJson) // Usamos la función robusta
+                Log.d("NOTAS_DEBUG", "Materias con unidades encontradas: ${lista.size}")
+                lista
+            } else {
+                emptyList()
+            }
+        } catch (e: Exception) {
+            Log.e("NOTAS_DEBUG", "Error en fetch: ${e.message}")
+            emptyList()
+        }
+    }
+
+
+
+    override suspend fun fetchCalifFinalesRemote(): List<CalifFinal> {
+        return try {
+            val xmlString = getCalifFinalXml() // Por defecto usa 1
+            val requestBody = xmlString.toRequestBody("text/xml; charset=utf-8".toMediaType())
+            val response = snApiService.getCalifFinales(requestBody)
+            val xmlCompleto = response.string()
+
+            val regex = Regex("""<getAllCalifFinalByAlumnosResult>([\s\S]*?)</getAllCalifFinalByAlumnosResult>""", RegexOption.IGNORE_CASE)
+            val contenidoJson = regex.find(xmlCompleto)?.groupValues?.get(1) ?: ""
+
+            if (contenidoJson.isNotEmpty() && contenidoJson != "null") {
+                val gson = Gson()
+                val listaRaw: List<FinalRaw> = try {
+                    val res = gson.fromJson(contenidoJson, FinalResponse::class.java)
+                    res.lstCalificacionFinal
+                } catch (e: Exception) {
+                    val type = object : TypeToken<List<FinalRaw>>() {}.type
+                    gson.fromJson(contenidoJson, type)
+                }
+
+                listaRaw.map { raw ->
+                    CalifFinal(
+                        materia = raw.materia ?: "",
+                        grupo = raw.grupo ?: "",
+                        calificacion = raw.calif ?: 0,
+                        acreditacion = raw.acred ?: ""
+                    )
+                }
+            } else emptyList()
+        } catch (e: Exception) {
+            Log.e("FINAL_DEBUG", "Error: ${e.message}")
+            emptyList()
         }
     }
 
