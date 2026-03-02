@@ -1,5 +1,9 @@
 package com.example.marsphotos
 
+import android.annotation.SuppressLint
+import android.content.Context
+import android.net.ConnectivityManager
+import android.net.NetworkCapabilities
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -20,6 +24,7 @@ import com.example.marsphotos.ui.screens.PerfilPantalla
 import com.example.marsphotos.ui.screens.KardexScreen // Asegúrate de que esta importación esté
 // Importación para el futuro
 import com.example.marsphotos.ui.theme.MarsPhotosTheme
+
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -55,14 +60,21 @@ class MainActivity : ComponentActivity() {
                             MenuScreen(navController = navController)
                         }
 
+                        // ... dentro de tu NavHost ...
+
                         composable("carga") {
-                            val repository = (LocalContext.current.applicationContext as MarsPhotosApplication).container.snRepository
+                            val context = LocalContext.current
+                            val app = context.applicationContext as MarsPhotosApplication
+                            val isOnline = isNetworkAvailable(context)
                             val viewModel: CargaViewModel = viewModel(
-                                factory = CargaViewModelFactory(repository)
+                                factory = CargaViewModelFactory(app.container.snRepository, app)
                             )
+
+                            // 3. Pasamos el parámetro faltante 'isOnline'
                             CargaAcademicaScreen(
                                 navController = navController,
-                                viewModel = viewModel
+                                viewModel = viewModel,
+                                isOnline = isOnline
                             )
                         }
                         // 5. Kardex Escolar (La que estás haciendo tú)
@@ -75,6 +87,17 @@ class MainActivity : ComponentActivity() {
                     }
                 }
             }
+        }
+    }
+    @SuppressLint("ServiceCast")
+    private fun isNetworkAvailable(context: Context): Boolean {
+        val connectivityManager = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+        val network = connectivityManager.activeNetwork ?: return false
+        val activeNetwork = connectivityManager.getNetworkCapabilities(network) ?: return false
+        return when {
+            activeNetwork.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) -> true
+            activeNetwork.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) -> true
+            else -> false
         }
     }
 }

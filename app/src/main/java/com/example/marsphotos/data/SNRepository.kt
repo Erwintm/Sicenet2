@@ -31,6 +31,8 @@ interface SNRepository {
     // --- EL CAMBIO ESTÁ AQUÍ ---
     suspend fun fetchKardexRemote(): List<Kardex> // Cambiado de String a List<Kardex>
     fun obtenerKardexLocal(): Flow<List<Kardex>>
+    suspend fun insertLocalCarga(materias: List<CargaAcademica>)
+
 }
 
 class NetworkSNRepository(
@@ -114,6 +116,8 @@ class NetworkSNRepository(
 
     override fun obtenerKardexLocal(): Flow<List<Kardex>> = snDao.obtenerKardex()
 
+
+
     // --- EL RESTO DE TUS FUNCIONES (Profile, Carga, etc) ---
 
     override suspend fun profile(m: String): ProfileStudent {
@@ -177,6 +181,18 @@ class NetworkSNRepository(
             Log.e("DEBUG_CARGA", "Error fatal en fetchCargaAcademica: ${e.message}")
             e.printStackTrace()
             emptyList()
+        }
+    }
+    override suspend fun insertLocalCarga(materias: List<CargaAcademica>) {
+        try {
+            // Ahora estas llamadas ya no marcarán error de "suspend function call"
+            snDao.borrarCarga()
+
+            snDao.insertarCarga(materias)
+
+            Log.d("REPO_LOCAL", "Se insertaron ${materias.size} materias en Room")
+        } catch (e: Exception) {
+            Log.e("REPO_LOCAL", "Error al insertar en BD local: ${e.message}")
         }
     }
 

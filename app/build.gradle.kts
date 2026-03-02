@@ -98,6 +98,7 @@ dependencies {
     implementation("androidx.test.espresso:espresso-core:3.7.0")
     implementation("com.google.android.gms:play-services-vision:20.1.3")
     implementation("androidx.work:work-runtime-ktx:2.9.1")
+    implementation("androidx.compose.runtime:runtime-livedata")
     kapt("androidx.room:room-compiler:2.6.1")
 
     // Otros

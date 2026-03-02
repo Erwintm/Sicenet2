@@ -1,42 +1,37 @@
 package com.example.marsphotos.workers
 
 import android.content.Context
-
-
+import android.util.Log
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
+import com.example.marsphotos.MarsPhotosApplication
 import com.example.marsphotos.data.SNDao
 import com.example.marsphotos.model.CargaAcademica
-
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
-
-import java.util.Date
 import java.text.SimpleDateFormat
+import java.util.Date
 import java.util.Locale
 
-class StoreCargaWorker(
-    context: Context,
-    workerParams: WorkerParameters,
-    private val snDao: SNDao
-) : CoroutineWorker(context, workerParams) {
 
+class StoreCargaWorker(ctx: Context, params: WorkerParameters) : CoroutineWorker(ctx, params) {
     override suspend fun doWork(): Result {
-
-        val jsonString = inputData.getString("KEY_CARGA_JSON") ?: return Result.failure()
+        // 1. Recibir datos de entrada del worker anterior
+        val json = inputData.getString("KEY_CARGA_JSON") ?: return Result.failure()
+        val repository = (applicationContext as MarsPhotosApplication).container.snRepository
 
         return try {
+            val listType = object : TypeToken<List<CargaAcademica>>() {}.type
+            val materias: List<CargaAcademica> = Gson().fromJson(json, listType)
 
-            val type = object : TypeToken<List<CargaAcademica>>() {}.type
-            val materias: List<CargaAcademica> = Gson().fromJson(jsonString, type)
-
-
+            // 2. Sellar con la fecha actual (Requerimiento b)
             val fechaActual = SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault()).format(Date())
             materias.forEach { it.fechaSincronizacion = fechaActual }
 
+            // 3. Guardar en la base de datos local
+            repository.insertLocalCarga(materias)
 
-            snDao.insertarCarga(materias)
-
+            Log.d("WORKER", "Datos guardados en BD local con fecha: $fechaActual")
             Result.success()
         } catch (e: Exception) {
             Result.failure()

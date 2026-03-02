@@ -40,25 +40,56 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
+import androidx.compose.runtime.livedata.observeAsState
+import androidx.work.WorkInfo
 
 @Composable
-fun CargaAcademicaScreen(viewModel: CargaViewModel,navController: NavController) {
+fun CargaAcademicaScreen(
+    viewModel: CargaViewModel,
+    navController: NavController,
+    isOnline: Boolean // Pásalo como true/false según el estado de red
+) {
     val listaCarga by viewModel.materias.collectAsState()
-    val cargando by viewModel.isLoading.collectAsState()
+    val workInfos by viewModel.syncWorkInfo.observeAsState()
+
+    // Verificamos si los Workers están trabajando
+    val estaSincronizando = workInfos?.any {
+        it.state == WorkInfo.State.RUNNING || it.state == WorkInfo.State.ENQUEUED
+    } == true
+
+    // Disparar sincronización al entrar si hay internet
+    LaunchedEffect(isOnline) {
+        if (isOnline) viewModel.sincronizarCarga()
+    }
 
     Column(modifier = Modifier.fillMaxSize().background(Color(0xFFF2F2F2))) {
-        // Encabezado Verde
-        Surface(
-            modifier = Modifier.fillMaxWidth(),
-            color = Color(0xFF1B5E20)
-        ) {
-            Row(modifier = Modifier.padding(12.dp)) {
-                Text("MATERIA / DOCENTE", color = Color.White, modifier = Modifier.weight(2f), style = MaterialTheme.typography.labelLarge)
-                Text("HORARIO", color = Color.White, modifier = Modifier.weight(2f), textAlign = TextAlign.Center, style = MaterialTheme.typography.labelLarge)
+
+        // --- ETIQUETA DE FECHA (Punto b del requerimiento) ---
+        if (listaCarga.isNotEmpty()) {
+            val fecha = listaCarga.first().fechaSincronizacion
+            Surface(
+                modifier = Modifier.fillMaxWidth(),
+                color = if (isOnline) Color(0xFFE8F5E9) else Color(0xFFFFEBEE)
+            ) {
+                Text(
+                    text = if (isOnline) "Actualizado: $fecha" else "Modo Offline - Datos del $fecha",
+                    modifier = Modifier.padding(8.dp),
+                    style = MaterialTheme.typography.labelSmall,
+                    color = if (isOnline) Color(0xFF2E7D32) else Color(0xFFD32F2F),
+                    textAlign = TextAlign.Center
+                )
             }
         }
 
-        if (cargando) {
+        // Encabezado Verde Estilo Sicenet
+        Surface(modifier = Modifier.fillMaxWidth(), color = Color(0xFF1B5E20)) {
+            Row(modifier = Modifier.padding(12.dp)) {
+                Text("MATERIA / DOCENTE", color = Color.White, modifier = Modifier.weight(2.5f), style = MaterialTheme.typography.labelLarge)
+                Text("HORARIO", color = Color.White, modifier = Modifier.weight(1.5f), textAlign = TextAlign.End, style = MaterialTheme.typography.labelLarge)
+            }
+        }
+
+        if (estaSincronizando) {
             LinearProgressIndicator(modifier = Modifier.fillMaxWidth(), color = Color(0xFFE65100))
         }
 
@@ -79,14 +110,12 @@ fun CargaItemRow(carga: CargaAcademica) {
         elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
     ) {
         Row(modifier = Modifier.padding(12.dp).height(IntrinsicSize.Min)) {
-            // Columna Materia
-            Column(modifier = Modifier.weight(2f)) {
+            Column(modifier = Modifier.weight(2.5f)) {
                 Text(carga.Materia, fontWeight = FontWeight.Bold, fontSize = 13.sp, lineHeight = 16.sp)
                 Text(carga.Docente, color = Color(0xFFE65100), fontSize = 11.sp, lineHeight = 14.sp)
             }
 
-            // Columna Horarios
-            Column(modifier = Modifier.weight(2f), horizontalAlignment = Alignment.End) {
+            Column(modifier = Modifier.weight(1.5f), horizontalAlignment = Alignment.End) {
                 val dias = listOf("L" to carga.Lunes, "M" to carga.Martes, "Mi" to carga.Miercoles, "J" to carga.Jueves, "V" to carga.Viernes)
                 dias.forEach { (label, horario) ->
                     if (horario.isNotBlank()) {
@@ -97,18 +126,3 @@ fun CargaItemRow(carga: CargaAcademica) {
         }
     }
 }
-
-@Composable
-fun HeaderTabla() {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .background(Color(0xFF1B5E20)) // Verde oscuro
-            .padding(12.dp)
-    ) {
-        Text("MATERIA / DOCENTE", color = Color.White, modifier = Modifier.weight(2f), fontSize = 12.sp, fontWeight = FontWeight.Bold)
-        Text("GRUPO", color = Color.White, modifier = Modifier.weight(0.5f), fontSize = 12.sp, textAlign = TextAlign.Center)
-        Text("HORARIO", color = Color.White, modifier = Modifier.weight(2f), fontSize = 12.sp, textAlign = TextAlign.Center)
-    }
-}
-
