@@ -172,14 +172,14 @@ class NetworkSNRepository(
 
             val rawJson = response.body()?.body?.getCargaResponse?.result ?: return emptyList()
 
-            // 3. Limpiar el JSON si viene envuelto en etiquetas <string> (común en Sicenet)
+
             val cleanJson = if (rawJson.contains("<string")) {
                 rawJson.substringAfter(">").substringBeforeLast("</string>")
             } else {
                 rawJson
             }
 
-            // 4. Parsear con Gson
+
             val listaType = object : TypeToken<List<CargaAcademica>>() {}.type
             val resultado: List<CargaAcademica> = Gson().fromJson(cleanJson, listaType)
 

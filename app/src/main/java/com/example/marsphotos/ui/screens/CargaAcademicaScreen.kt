@@ -52,19 +52,19 @@ fun CargaAcademicaScreen(
     val listaCarga by viewModel.materias.collectAsState()
     val workInfos by viewModel.syncWorkInfo.observeAsState()
 
-    // Verificamos si los Workers están trabajando
+
     val estaSincronizando = workInfos?.any {
         it.state == WorkInfo.State.RUNNING || it.state == WorkInfo.State.ENQUEUED
     } == true
 
-    // Disparar sincronización al entrar si hay internet
+
     LaunchedEffect(isOnline) {
         if (isOnline) viewModel.sincronizarCarga()
     }
 
     Column(modifier = Modifier.fillMaxSize().background(Color(0xFFF2F2F2))) {
 
-        // --- ETIQUETA DE FECHA (Punto b del requerimiento) ---
+
         if (listaCarga.isNotEmpty()) {
             val fecha = listaCarga.first().fechaSincronizacion
             Surface(
@@ -81,7 +81,7 @@ fun CargaAcademicaScreen(
             }
         }
 
-        // Encabezado Verde Estilo Sicenet
+
         Surface(modifier = Modifier.fillMaxWidth(), color = Color(0xFF1B5E20)) {
             Row(modifier = Modifier.padding(12.dp)) {
                 Text("MATERIA / DOCENTE", color = Color.White, modifier = Modifier.weight(2.5f), style = MaterialTheme.typography.labelLarge)

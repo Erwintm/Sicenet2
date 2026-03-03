@@ -14,13 +14,13 @@ class FetchCargaWorker(ctx: Context, params: WorkerParameters) : CoroutineWorker
         val repository = (applicationContext as MarsPhotosApplication).container.snRepository
 
         return try {
-            // 1. Consultar a la API
+
             val materias = repository.fetchCargaAcademica()
 
-            // 2. Convertir a JSON para transportarlo
+
             val jsonMaterias = Gson().toJson(materias)
 
-            // 3. Los datos de salida para el siguiente trabajo
+
             val outputData = workDataOf("KEY_CARGA_JSON" to jsonMaterias)
 
             Log.d("WORKER", "Fetch exitoso, enviando datos al siguiente...")

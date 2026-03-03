@@ -28,7 +28,7 @@ class CargaViewModel(
 
     private val workManager = WorkManager.getInstance(application)
 
-    // Fuente de verdad: La base de datos local
+
     val materias: StateFlow<List<CargaAcademica>> = repository.getCargaLocal()
         .stateIn(
             scope = viewModelScope,
@@ -36,7 +36,7 @@ class CargaViewModel(
             initialValue = emptyList()
         )
 
-    // Observamos el estado del WorkManager para la barra de carga
+
     val syncWorkInfo: LiveData<List<WorkInfo>> =
         workManager.getWorkInfosForUniqueWorkLiveData("sync_carga_unica")
 
@@ -52,7 +52,7 @@ class CargaViewModel(
         val storeRequest = OneTimeWorkRequestBuilder<StoreCargaWorker>()
             .build()
 
-        // Encadenamiento único (Punto A y B del requerimiento)
+
         workManager.beginUniqueWork(
             "sync_carga_unica",
             ExistingWorkPolicy.REPLACE,

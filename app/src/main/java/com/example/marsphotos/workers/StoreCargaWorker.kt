@@ -16,7 +16,7 @@ import java.util.Locale
 
 class StoreCargaWorker(ctx: Context, params: WorkerParameters) : CoroutineWorker(ctx, params) {
     override suspend fun doWork(): Result {
-        // 1. Recibir datos de entrada del worker anterior
+
         val json = inputData.getString("KEY_CARGA_JSON") ?: return Result.failure()
         val repository = (applicationContext as MarsPhotosApplication).container.snRepository
 
@@ -24,11 +24,11 @@ class StoreCargaWorker(ctx: Context, params: WorkerParameters) : CoroutineWorker
             val listType = object : TypeToken<List<CargaAcademica>>() {}.type
             val materias: List<CargaAcademica> = Gson().fromJson(json, listType)
 
-            // 2. Sellar con la fecha actual (Requerimiento b)
+
             val fechaActual = SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault()).format(Date())
             materias.forEach { it.fechaSincronizacion = fechaActual }
 
-            // 3. Guardar en la base de datos local
+
             repository.insertLocalCarga(materias)
 
             Log.d("WORKER", "Datos guardados en BD local con fecha: $fechaActual")
