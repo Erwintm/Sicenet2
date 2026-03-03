@@ -1,12 +1,17 @@
 package com.example.marsphotos.model
 
+import androidx.room.Entity
+import androidx.room.PrimaryKey
+
 // Data class lista para recibir los datos del perfil
+@Entity(tableName = "perfil_estudiante")
 data class ProfileStudent(
-    val matricula: String,
+    @PrimaryKey val matricula: String, // La matrícula es única
     val nombre: String,
     val carrera: String,
     val promedio: String,
     val semestre: String,
     val creditos: String,
-    val fechaReins: String
+    val fechaReins: String,
+    var fechaSincronizacion: String = "" // Para el requisito de fecha
 )

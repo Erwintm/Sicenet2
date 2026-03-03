@@ -1,12 +1,16 @@
 package com.example.marsphotos.ui.screens
 
+import android.app.Application
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import androidx.lifecycle.ViewModel
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.work.*
 import com.example.marsphotos.data.SNRepository
 import com.example.marsphotos.model.MateriaUnidades
+import com.example.marsphotos.workers.FetchNotasWorker
+import com.example.marsphotos.workers.StoreNotasWorker
 import kotlinx.coroutines.launch
 
 data class NotasUiState(
@@ -16,22 +20,42 @@ data class NotasUiState(
 )
 
 class NotasUnidadesViewModel(
+    application: Application,
     private val repository: SNRepository
-) : ViewModel() {
+) : AndroidViewModel(application) {
 
     var uiState by mutableStateOf(NotasUiState())
         private set
 
-    fun cargarNotas() {
+    private val workManager = WorkManager.getInstance(application)
+
+    // Monitoreo del status para la UI (Punto 2b)
+    val syncWorkInfo = workManager.getWorkInfosForUniqueWorkLiveData("sync_notas")
+
+    init {
+        // LEER SIEMPRE DE LOCAL (Punto 1 y Requisito Offline)
         viewModelScope.launch {
-            uiState = uiState.copy(isLoading = true, error = null)
-            try {
-                // El repositorio debería devolver la lista de la DB o Nube
-                val lista = repository.fetchNotasUnidadesRemote()
-                uiState = uiState.copy(materias = lista, isLoading = false)
-            } catch (e: Exception) {
-                uiState = uiState.copy(isLoading = false, error = "Error al cargar calificaciones")
+            repository.obtenerNotasLocal().collect { lista ->
+                uiState = uiState.copy(materias = lista)
             }
         }
+    }
+
+    fun cargarNotas(isOnline: Boolean) {
+        if (isOnline) {
+            sincronizarConWorkers()
+        }
+    }
+
+    private fun sincronizarConWorkers() {
+        // ENCADENAMIENTO ÚNICO (Punto 2b)
+        val fetch = OneTimeWorkRequestBuilder<FetchNotasWorker>().build()
+        val store = OneTimeWorkRequestBuilder<StoreNotasWorker>().build()
+
+        workManager.beginUniqueWork(
+            "sync_notas",
+            ExistingWorkPolicy.REPLACE,
+            fetch
+        ).then(store).enqueue()
     }
 }

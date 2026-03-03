@@ -1,5 +1,7 @@
 package com.example.marsphotos.ui.screens
 
+import android.net.ConnectivityManager
+import android.net.NetworkCapabilities
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -7,14 +9,16 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.*
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import androidx.work.WorkInfo
 import com.example.marsphotos.model.CalifFinal
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -23,10 +27,19 @@ fun CalifFinalScreen(
     navController: NavController,
     viewModel: CalifFinalViewModel
 ) {
+    val context = LocalContext.current
     val uiState = viewModel.uiState
 
+    // Monitoreo del Worker
+    val workInfos by viewModel.syncWorkInfo.observeAsState()
+    val isSyncing = workInfos?.any { it.state == WorkInfo.State.RUNNING } == true
+
     LaunchedEffect(Unit) {
-        viewModel.cargarFinales()
+        val cm = context.getSystemService(ConnectivityManager::class.java)
+        val isOnline = cm.activeNetwork?.let { cm.getNetworkCapabilities(it) }
+            ?.let { it.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) || it.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) } ?: false
+
+        viewModel.cargarFinales(isOnline)
     }
 
     Scaffold(
@@ -41,30 +54,38 @@ fun CalifFinalScreen(
             )
         }
     ) { padding ->
-        if (uiState.isLoading) {
-            Box(Modifier.fillMaxSize().padding(padding), contentAlignment = Alignment.Center) {
-                CircularProgressIndicator()
+        Column(modifier = Modifier.padding(padding)) {
+
+            // Etiqueta de sincronización
+            uiState.listaFinal.firstOrNull()?.let {
+                Text(
+                    text = "Actualizado: ${it.fechaSincronizacion}",
+                    style = MaterialTheme.typography.labelSmall,
+                    modifier = Modifier.padding(16.dp),
+                    color = Color.Gray
+                )
             }
-        } else if (uiState.listaFinal.isEmpty()) {
-            Box(Modifier.fillMaxSize().padding(padding), contentAlignment = Alignment.Center) {
-                Text("No hay calificaciones finales disponibles", color = Color.Gray)
-            }
-        } else {
-            LazyColumn(
-                modifier = Modifier
-                    .padding(padding)
-                    .fillMaxSize()
-                    .padding(horizontal = 16.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp),
-                contentPadding = PaddingValues(vertical = 16.dp)
-            ) {
-                items(uiState.listaFinal) { item ->
-                    CalifFinalCard(item)
+
+            if (isSyncing && uiState.listaFinal.isEmpty()) {
+                Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    CircularProgressIndicator()
+                }
+            } else {
+                LazyColumn(
+                    modifier = Modifier.fillMaxSize().padding(horizontal = 16.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                    contentPadding = PaddingValues(bottom = 16.dp)
+                ) {
+                    items(uiState.listaFinal) { item ->
+                        CalifFinalCard(item)
+                    }
                 }
             }
         }
     }
 }
+// ... (Tu CalifFinalCard se queda exactamente igual)
+// ... (Todo el código que ya tienes de CalifFinalScreen)
 
 @Composable
 fun CalifFinalCard(final: CalifFinal) {

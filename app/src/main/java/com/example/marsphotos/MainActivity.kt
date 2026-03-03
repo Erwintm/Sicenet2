@@ -17,21 +17,8 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.marsphotos.model.CargaViewModel
 import com.example.marsphotos.model.CargaViewModelFactory
-import com.example.marsphotos.ui.screens.CalifFinalScreen
-import com.example.marsphotos.ui.screens.CalifFinalViewModel
-import com.example.marsphotos.ui.screens.CalifFinalViewModelFactory
-import com.example.marsphotos.ui.screens.CargaAcademicaScreen
-import com.example.marsphotos.ui.screens.LoginPantalla
-import com.example.marsphotos.ui.screens.MenuScreen
-import com.example.marsphotos.ui.screens.PerfilPantalla
-import com.example.marsphotos.ui.screens.KardexScreen // Asegúrate de que esta importación esté
-import com.example.marsphotos.ui.screens.NotasUnidadesScreen
-// Importación para el futuro
+import com.example.marsphotos.ui.screens.*
 import com.example.marsphotos.ui.theme.MarsPhotosTheme
-import com.example.marsphotos.ui.screens.NotasUnidadesViewModel
-import com.example.marsphotos.ui.screens.NotasUnidadesViewModelFactory
-
-
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -48,12 +35,11 @@ class MainActivity : ComponentActivity() {
                         // 1. Pantalla de Login
                         composable("login") {
                             LoginPantalla(onLoginSuccess = { matricula ->
-                                // Al loguear con éxito, vamos al perfil pasando la matrícula
                                 navController.navigate("perfil/$matricula")
                             })
                         }
 
-                        // 2. Pantalla de Perfil (Recibe parámetro)
+                        // 2. Pantalla de Perfil
                         composable("perfil/{matricula}") { backStackEntry ->
                             val matricula = backStackEntry.arguments?.getString("matricula") ?: ""
                             PerfilPantalla(
@@ -67,8 +53,7 @@ class MainActivity : ComponentActivity() {
                             MenuScreen(navController = navController)
                         }
 
-                        // ... dentro de tu NavHost ...
-
+                        // 4. Carga Académica
                         composable("carga") {
                             val context = LocalContext.current
                             val app = context.applicationContext as MarsPhotosApplication
@@ -76,46 +61,50 @@ class MainActivity : ComponentActivity() {
                             val viewModel: CargaViewModel = viewModel(
                                 factory = CargaViewModelFactory(app.container.snRepository, app)
                             )
-
-                            // 3. Pasamos el parámetro faltante 'isOnline'
                             CargaAcademicaScreen(
                                 navController = navController,
                                 viewModel = viewModel,
                                 isOnline = isOnline
                             )
                         }
-                        // 5. Kardex Escolar (La que estás haciendo tú)
+
+                        // 5. Kardex Escolar
                         composable("kardex") {
                             KardexScreen(navController = navController)
                         }
 
-                        // 6. Calificaciones por Unidad
+                        // 6. Calificaciones por Unidad (CORREGIDO)
                         composable("notas") {
-                            val repository = (LocalContext.current.applicationContext as MarsPhotosApplication).container.snRepository
+                            val context = LocalContext.current
+                            val app = context.applicationContext as MarsPhotosApplication
+                            val repository = app.container.snRepository
+
                             val viewModel: NotasUnidadesViewModel = viewModel(
-                                factory = NotasUnidadesViewModelFactory(repository)
+                                factory = NotasUnidadesViewModelFactory(app, repository)
                             )
                             NotasUnidadesScreen(viewModel = viewModel)
                         }
 
+                        // 7. Calificaciones Finales (CORREGIDO)
                         composable("finales") {
-                            val repository = (LocalContext.current.applicationContext as MarsPhotosApplication).container.snRepository
+                            val context = LocalContext.current
+                            val app = context.applicationContext as MarsPhotosApplication
+                            val repository = app.container.snRepository
+
                             val viewModel: CalifFinalViewModel = viewModel(
-                                factory = CalifFinalViewModelFactory(repository)
+                                factory = CalifFinalViewModelFactory(app, repository)
                             )
                             CalifFinalScreen(
                                 navController = navController,
                                 viewModel = viewModel
                             )
                         }
-
-
-
                     }
                 }
             }
         }
     }
+
     @SuppressLint("ServiceCast")
     private fun isNetworkAvailable(context: Context): Boolean {
         val connectivityManager = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
