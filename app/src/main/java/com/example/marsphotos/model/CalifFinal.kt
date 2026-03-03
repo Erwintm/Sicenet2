@@ -9,7 +9,8 @@ data class CalifFinal(
     val materia: String = "",
     val grupo: String = "",
     val calificacion: Int = 0,
-    val acreditacion: String = ""
+    val acreditacion: String = "",
+    var fechaSincronizacion: String = "" // <--- Agregado
 )
 
 // Para el parseo

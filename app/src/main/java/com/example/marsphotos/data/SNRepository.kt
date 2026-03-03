@@ -1,17 +1,8 @@
 package com.example.marsphotos.data
 
 import android.util.Log
-import com.example.marsphotos.model.CalifFinal
-import com.example.marsphotos.model.CargaAcademica
-import com.example.marsphotos.model.FinalRaw
-import com.example.marsphotos.model.FinalResponse
-import com.example.marsphotos.model.Kardex // Importante importar tu nuevo modelo
-import com.example.marsphotos.model.ProfileStudent
-import com.example.marsphotos.network.SICENETWService
-import com.example.marsphotos.network.getCargaXml
-import com.example.marsphotos.network.getKardexXml
-import com.example.marsphotos.network.getLoginXml
-import com.example.marsphotos.network.getPerfilXml
+import com.example.marsphotos.model.*
+import com.example.marsphotos.network.*
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import kotlinx.coroutines.flow.Flow
@@ -21,29 +12,31 @@ import okhttp3.RequestBody.Companion.toRequestBody
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
-import com.example.marsphotos.model.KardexResponse
-import com.example.marsphotos.model.KardexRaw
-import com.example.marsphotos.model.MateriaUnidades
-import com.example.marsphotos.model.UnidadesRaw
-import com.example.marsphotos.model.UnidadesResponse
-import com.example.marsphotos.network.getCalifFinalXml
-import com.example.marsphotos.network.getNotasUnidadesXml
-
 
 interface SNRepository {
+    // Auth & Perfil
     suspend fun acceso(m: String, p: String): String
     suspend fun profile(m: String): ProfileStudent
+
+    // Carga Académica
     suspend fun fetchCargaAcademica(): List<CargaAcademica>
     fun getCargaLocal(): Flow<List<CargaAcademica>>
-
-    // --- EL CAMBIO ESTÁ AQUÍ ---
-    suspend fun fetchKardexRemote(): List<Kardex> // Cambiado de String a List<Kardex>
-    fun obtenerKardexLocal(): Flow<List<Kardex>>
-
-    suspend fun fetchNotasUnidadesRemote(): List<MateriaUnidades>
-
-    suspend fun fetchCalifFinalesRemote(): List<CalifFinal>
     suspend fun insertLocalCarga(materias: List<CargaAcademica>)
+
+    // Kardex
+    suspend fun fetchKardexRemote(): List<Kardex>
+    fun obtenerKardexLocal(): Flow<List<Kardex>>
+    suspend fun insertarKardexLocal(lista: List<Kardex>)
+
+    // Notas por Unidad
+    suspend fun fetchNotasUnidadesRemote(): List<MateriaUnidades>
+    fun obtenerNotasLocal(): Flow<List<MateriaUnidades>>
+    suspend fun insertarNotasLocal(lista: List<MateriaUnidades>)
+
+    // Calificaciones Finales
+    suspend fun fetchCalifFinalesRemote(): List<CalifFinal>
+    fun obtenerFinalesLocal(): Flow<List<CalifFinal>>
+    suspend fun insertarFinalesLocal(lista: List<CalifFinal>)
 }
 
 class NetworkSNRepository(
@@ -51,86 +44,19 @@ class NetworkSNRepository(
     private val snDao: SNDao
 ) : SNRepository {
 
+    // --- AUTENTICACIÓN ---
     override suspend fun acceso(m: String, p: String): String {
         return try {
             val xmlString = getLoginXml(m, p)
             val requestBody = xmlString.toRequestBody("text/xml".toMediaTypeOrNull())
             val res = snApiService.acceso(requestBody)
             val responseString = res.string()
-
-            if (responseString.contains("\"acceso\":true", ignoreCase = true)) {
-                "success"
-            } else {
-                "invalid"
-            }
-        } catch (e: Exception) {
-            Log.e("SICENET_DEBUG", "Error Login: ${e.message}")
-            "error"
-        }
+            if (responseString.contains("\"acceso\":true", ignoreCase = true)) "success" else "invalid"
+        } catch (e: Exception) { "error" }
     }
 
-    private fun parsearKardex(jsonString: String): List<Kardex> {
-        return try {
-            val sdf = SimpleDateFormat("dd/MM/yyyy HH:mm:ss", Locale.getDefault())
-            val fechaActual = sdf.format(Date())
-
-            // 1. Convertimos el String JSON a los objetos KardexRaw que creaste
-            val type = object : TypeToken<KardexResponse>() {}.type
-            val response: KardexResponse = Gson().fromJson(jsonString, type)
-
-            // 2. "Mapeamos" de KardexRaw (servidor) a Kardex (tu base de datos)
-            response.lstKardex.map { raw ->
-                Kardex(
-                    clvMateria = raw.ClvMat ?: "",
-                    materia = raw.Materia ?: "",
-                    calificacion = raw.Calif ?: 0,
-                    acreditacion = raw.Acred ?: "",
-                    periodo = "${raw.P1 ?: ""} ${raw.A1 ?: ""}".trim(),
-                    fechaSincronizacion = fechaActual
-                )
-            }
-        } catch (e: Exception) {
-            Log.e("KARDEX_PARSER", "Error parseando JSON: ${e.message}")
-            emptyList() // Si algo falla, regresamos lista vacía para que no truene la app
-        }
-    }
-
-    // --- IMPLEMENTACIÓN KARDEX ---
-
-    // Cambia el retorno de String a List<Kardex>
-    override suspend fun fetchKardexRemote(): List<Kardex> {
-        return try {
-            val xmlString = getKardexXml()
-            val requestBody = xmlString.toRequestBody("text/xml; charset=utf-8".toMediaType())
-            val response = snApiService.getKardex(requestBody)
-            val xmlCompleto = response.string()
-
-            // Sacamos el JSON que viene dentro del XML
-            val regex = Regex("""<getAllKardexConPromedioByAlumnoResult>([\s\S]*?)</getAllKardexConPromedioByAlumnoResult>""", RegexOption.IGNORE_CASE)
-            val contenidoJson = regex.find(xmlCompleto)?.groupValues?.get(1) ?: ""
-
-            if (contenidoJson.isNotEmpty()) {
-                val lista = parsearKardex(contenidoJson)
-                if (lista.isNotEmpty()) {
-                    // GUARDAR EN LA DB (SNDao)
-                    snDao.insertarKardex(lista)
-                    Log.d("KARDEX_DEBUG", "¡POR FIN! ${lista.size} materias guardadas en Room.")
-                    return lista
-                }
-            }
-            emptyList()
-        } catch (e: Exception) {
-            Log.e("KARDEX_DEBUG", "Error: ${e.message}")
-            emptyList()
-        }
-    }
-
-    override fun obtenerKardexLocal(): Flow<List<Kardex>> = snDao.obtenerKardex()
-
-    // --- EL RESTO DE TUS FUNCIONES (Profile, Carga, etc) ---
-
+    // --- PERFIL ---
     override suspend fun profile(m: String): ProfileStudent {
-        // ... (Tu código de profile se mantiene igual)
         return try {
             val xmlString = getPerfilXml(m)
             val requestBody = xmlString.toRequestBody("text/xml; charset=utf-8".toMediaTypeOrNull())
@@ -148,131 +74,75 @@ class NetworkSNRepository(
                     creditos = Regex("""\"cdtosAcumulados\":(\d+)""").find(jsonContent)?.groupValues?.get(1) ?: "0",
                     fechaReins = Regex("""\"fechaReins\":\"([^\"]+)""").find(jsonContent)?.groupValues?.get(1) ?: "No disponible"
                 )
-            } else {
-                ProfileStudent(m, "Error", "Formato inválido", "", "", "", "")
-            }
-        } catch (e: Exception) {
-            ProfileStudent(m, "Error de red", "", "", "", "", "")
-        }
+            } else ProfileStudent(m, "Error", "Formato inválido", "", "", "", "")
+        } catch (e: Exception) { ProfileStudent(m, "Error de red", "", "", "", "", "") }
     }
 
+    // --- CARGA ACADÉMICA ---
     override suspend fun fetchCargaAcademica(): List<CargaAcademica> {
         return try {
             val xmlString = getCargaXml()
             val requestBody = xmlString.toRequestBody("text/xml; charset=utf-8".toMediaTypeOrNull())
-
-
             val response = snApiService.getCarga(requestBody)
-
-            if (!response.isSuccessful) {
-                Log.e("DEBUG_CARGA", "Error en servidor: ${response.code()}")
-                return emptyList()
-            }
-
-
             val rawJson = response.body()?.body?.getCargaResponse?.result ?: return emptyList()
-
-
-            val cleanJson = if (rawJson.contains("<string")) {
-                rawJson.substringAfter(">").substringBeforeLast("</string>")
-            } else {
-                rawJson
-            }
-
-
-            val listaType = object : TypeToken<List<CargaAcademica>>() {}.type
-            val resultado: List<CargaAcademica> = Gson().fromJson(cleanJson, listaType)
-
-            Log.d("DEBUG_CARGA", "¡Éxito! Materias parseadas: ${resultado.size}")
-            resultado
-
-        } catch (e: Exception) {
-            Log.e("DEBUG_CARGA", "Error fatal en fetchCargaAcademica: ${e.message}")
-            e.printStackTrace()
-            emptyList()
-        }
+            val cleanJson = if (rawJson.contains("<string")) rawJson.substringAfter(">").substringBeforeLast("</string>") else rawJson
+            Gson().fromJson(cleanJson, object : TypeToken<List<CargaAcademica>>() {}.type)
+        } catch (e: Exception) { emptyList() }
     }
+
+    override fun getCargaLocal(): Flow<List<CargaAcademica>> = snDao.obtenerCarga()
+
     override suspend fun insertLocalCarga(materias: List<CargaAcademica>) {
-        try {
-
-            snDao.borrarCarga()
-
-            snDao.insertarCarga(materias)
-
-            Log.d("REPO_LOCAL", "Se insertaron ${materias.size} materias en Room")
-        } catch (e: Exception) {
-            Log.e("REPO_LOCAL", "Error al insertar en BD local: ${e.message}")
-        }
+        snDao.borrarCarga()
+        snDao.insertarCarga(materias)
     }
 
-
-    private fun parsearNotas(jsonString: String): List<MateriaUnidades> {
+    // --- KARDEX ---
+    override suspend fun fetchKardexRemote(): List<Kardex> {
         return try {
-            val gson = Gson()
-
-            val listaResult: List<UnidadesRaw> = try {
-                val type = object : TypeToken<UnidadesResponse>() {}.type
-                val res: UnidadesResponse = gson.fromJson(jsonString, type)
-                res.lstCalificacionUnidades
-            } catch (e: Exception) {
-                val typeList = object : TypeToken<List<UnidadesRaw>>() {}.type
-                gson.fromJson(jsonString, typeList)
-            }
-
-            // AGREGAMOS EL RETURN AQUÍ PARA QUE LA FUNCIÓN DEVUELVA LA LISTA
-            return listaResult.map { raw ->
-                // Juntamos todas las C1..C7. Si son "null", ponemos un guion o vacío.
-                val notas = listOfNotNull(raw.C1, raw.C2, raw.C3, raw.C4, raw.C5, raw.C6, raw.C7)
-                    .joinToString(",") { if (it == "null" || it.isBlank()) "-" else it }
-
-                Log.d("NOTAS_DEBUG", "Materia: ${raw.Materia} -> Unidades: $notas")
-
-                MateriaUnidades(
-                    materia = raw.Materia ?: "Materia",
-                    unidades = notas
-                )
-            }
-
-        } catch (e: Exception) {
-            Log.e("NOTAS_DEBUG", "Error parseando JSON de notas: ${e.message}")
-            emptyList()
-        }
+            val xmlString = getKardexXml()
+            val requestBody = xmlString.toRequestBody("text/xml; charset=utf-8".toMediaType())
+            val response = snApiService.getKardex(requestBody)
+            val xmlCompleto = response.string()
+            val regex = Regex("""<getAllKardexConPromedioByAlumnoResult>([\s\S]*?)</getAllKardexConPromedioByAlumnoResult>""", RegexOption.IGNORE_CASE)
+            val contenidoJson = regex.find(xmlCompleto)?.groupValues?.get(1) ?: ""
+            if (contenidoJson.isNotEmpty()) parsearKardex(contenidoJson) else emptyList()
+        } catch (e: Exception) { emptyList() }
     }
 
+    override fun obtenerKardexLocal(): Flow<List<Kardex>> = snDao.obtenerKardex()
 
+    override suspend fun insertarKardexLocal(lista: List<Kardex>) {
+        snDao.borrarKardex()
+        snDao.insertarKardex(lista)
+    }
+
+    // --- NOTAS POR UNIDAD ---
     override suspend fun fetchNotasUnidadesRemote(): List<MateriaUnidades> {
         return try {
             val xmlString = getNotasUnidadesXml()
             val requestBody = xmlString.toRequestBody("text/xml; charset=utf-8".toMediaType())
             val response = snApiService.getNotasUnidades(requestBody)
             val xmlCompleto = response.string()
-
-            // Extraer contenido del XML
             val regex = Regex("""<getCalifUnidadesByAlumnoResult>([\s\S]*?)</getCalifUnidadesByAlumnoResult>""", RegexOption.IGNORE_CASE)
             val contenidoJson = regex.find(xmlCompleto)?.groupValues?.get(1) ?: ""
-
-            if (contenidoJson.isNotEmpty() && contenidoJson != "null") {
-                val lista = parsearNotas(contenidoJson) // Usamos la función robusta
-                Log.d("NOTAS_DEBUG", "Materias con unidades encontradas: ${lista.size}")
-                lista
-            } else {
-                emptyList()
-            }
-        } catch (e: Exception) {
-            Log.e("NOTAS_DEBUG", "Error en fetch: ${e.message}")
-            emptyList()
-        }
+            if (contenidoJson.isNotEmpty() && contenidoJson != "null") parsearNotas(contenidoJson) else emptyList()
+        } catch (e: Exception) { emptyList() }
     }
 
+    override fun obtenerNotasLocal(): Flow<List<MateriaUnidades>> = snDao.obtenerNotas()
 
+    override suspend fun insertarNotasLocal(lista: List<MateriaUnidades>) {
+        snDao.insertarNotas(lista)
+    }
 
+    // --- CALIFICACIONES FINALES ---
     override suspend fun fetchCalifFinalesRemote(): List<CalifFinal> {
         return try {
-            val xmlString = getCalifFinalXml() // Por defecto usa 1
+            val xmlString = getCalifFinalXml()
             val requestBody = xmlString.toRequestBody("text/xml; charset=utf-8".toMediaType())
             val response = snApiService.getCalifFinales(requestBody)
             val xmlCompleto = response.string()
-
             val regex = Regex("""<getAllCalifFinalByAlumnosResult>([\s\S]*?)</getAllCalifFinalByAlumnosResult>""", RegexOption.IGNORE_CASE)
             val contenidoJson = regex.find(xmlCompleto)?.groupValues?.get(1) ?: ""
 
@@ -282,25 +152,50 @@ class NetworkSNRepository(
                     val res = gson.fromJson(contenidoJson, FinalResponse::class.java)
                     res.lstCalificacionFinal
                 } catch (e: Exception) {
-                    val type = object : TypeToken<List<FinalRaw>>() {}.type
-                    gson.fromJson(contenidoJson, type)
+                    gson.fromJson(contenidoJson, object : TypeToken<List<FinalRaw>>() {}.type)
                 }
-
                 listaRaw.map { raw ->
-                    CalifFinal(
-                        materia = raw.materia ?: "",
-                        grupo = raw.grupo ?: "",
-                        calificacion = raw.calif ?: 0,
-                        acreditacion = raw.acred ?: ""
-                    )
+                    CalifFinal(materia = raw.materia ?: "", grupo = raw.grupo ?: "", calificacion = raw.calif ?: 0, acreditacion = raw.acred ?: "")
                 }
             } else emptyList()
-        } catch (e: Exception) {
-            Log.e("FINAL_DEBUG", "Error: ${e.message}")
-            emptyList()
-        }
+        } catch (e: Exception) { emptyList() }
     }
 
-    override fun getCargaLocal(): Flow<List<CargaAcademica>> = snDao.obtenerCarga()
-}
+    override fun obtenerFinalesLocal(): Flow<List<CalifFinal>> = snDao.obtenerFinales()
 
+    override suspend fun insertarFinalesLocal(lista: List<CalifFinal>) {
+        snDao.insertarFinales(lista)
+    }
+
+    // --- PARSEADORES INTERNOS ---
+    private fun parsearKardex(jsonString: String): List<Kardex> {
+        return try {
+            val response: KardexResponse = Gson().fromJson(jsonString, KardexResponse::class.java)
+            response.lstKardex.map { raw ->
+                Kardex(
+                    clvMateria = raw.ClvMat ?: "",
+                    materia = raw.Materia ?: "",
+                    calificacion = raw.Calif ?: 0,
+                    acreditacion = raw.Acred ?: "",
+                    periodo = "${raw.P1 ?: ""} ${raw.A1 ?: ""}".trim()
+                )
+            }
+        } catch (e: Exception) { emptyList() }
+    }
+
+    private fun parsearNotas(jsonString: String): List<MateriaUnidades> {
+        return try {
+            val gson = Gson()
+            val listaRaw: List<UnidadesRaw> = try {
+                gson.fromJson(jsonString, UnidadesResponse::class.java).lstCalificacionUnidades
+            } catch (e: Exception) {
+                gson.fromJson(jsonString, object : TypeToken<List<UnidadesRaw>>() {}.type)
+            }
+            listaRaw.map { raw ->
+                val notas = listOfNotNull(raw.C1, raw.C2, raw.C3, raw.C4, raw.C5, raw.C6, raw.C7)
+                    .joinToString(",") { if (it == "null" || it.isBlank()) "-" else it }
+                MateriaUnidades(materia = raw.Materia ?: "Materia", unidades = notas)
+            }
+        } catch (e: Exception) { emptyList() }
+    }
+}

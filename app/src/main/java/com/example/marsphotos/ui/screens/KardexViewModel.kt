@@ -1,15 +1,19 @@
 package com.example.marsphotos.ui.screens
 
-import android.util.Log
+import android.app.Application
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import androidx.lifecycle.ViewModel
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.work.*
 import com.example.marsphotos.data.SNRepository
 import com.example.marsphotos.model.Kardex
-import kotlinx.coroutines.flow.first
+
+import com.example.marsphotos.workers.StoreKardexWorker
 import kotlinx.coroutines.launch
+import androidx.lifecycle.asLiveData
+import com.example.marsphotos.data.FetchKardexWorker
 
 data class KardexUiState(
     val isLoading: Boolean = false,
@@ -17,44 +21,44 @@ data class KardexUiState(
     val error: String? = null
 )
 
+// Cambiamos a AndroidViewModel para tener acceso al Context para WorkManager
 class KardexViewModel(
+    application: Application,
     private val repository: SNRepository
-) : ViewModel() {
+) : AndroidViewModel(application) {
 
     var uiState by mutableStateOf(KardexUiState())
         private set
 
-    fun cargarKardex() {
+    private val workManager = WorkManager.getInstance(application)
+
+    // Observamos el estatus de la sincronización (Punto 2b: Monitorear estatus)
+    val syncWorkInfo = workManager.getWorkInfosForUniqueWorkLiveData("sync_kardex")
+
+    init {
+        // 1. Siempre observar la base de datos local (Single Source of Truth)
         viewModelScope.launch {
-            uiState = uiState.copy(isLoading = true, error = null)
-            Log.d("KARDEX_DEBUG", "Iniciando carga...")
-
-            try {
-                // 1. Intentamos leer de la DB local primero
-                val listaLocal = repository.obtenerKardexLocal().first()
-                Log.d("KARDEX_DEBUG", "Datos locales encontrados: ${listaLocal.size}")
-
-                if (listaLocal.isNotEmpty()) {
-                    uiState = uiState.copy(materias = listaLocal, isLoading = false)
-                } else {
-                    // 2. Si está vacío, consultamos al Repositorio
-                    Log.d("KARDEX_DEBUG", "DB vacía, consultando SICENET...")
-
-                    // IMPORTANTE: El repositorio ya debe devolver List<Kardex>
-                    // y no un String/JSON.
-                    val listaNube = repository.fetchKardexRemote()
-
-                    if (listaNube.isNotEmpty()) {
-                        uiState = uiState.copy(materias = listaNube, isLoading = false)
-                        Log.d("KARDEX_DEBUG", "¡Éxito! UI actualizada con ${listaNube.size} materias.")
-                    } else {
-                        uiState = uiState.copy(isLoading = false, error = "El Kardex está vacío en el servidor")
-                    }
-                }
-            } catch (e: Exception) {
-                Log.e("KARDEX_DEBUG", "Error en ViewModel: ${e.message}")
-                uiState = uiState.copy(isLoading = false, error = "Error al procesar datos")
+            repository.obtenerKardexLocal().collect { lista ->
+                uiState = uiState.copy(materias = lista)
             }
         }
+    }
+
+    fun cargarKardex(isOnline: Boolean) {
+        if (isOnline) {
+            sincronizarConWorkers()
+        }
+    }
+
+    private fun sincronizarConWorkers() {
+        // Punto 2b: Dos peticiones de trabajo que se ven como únicos
+        val fetchKardex = OneTimeWorkRequestBuilder<FetchKardexWorker>().build()
+        val storeKardex = OneTimeWorkRequestBuilder<StoreKardexWorker>().build()
+
+        workManager.beginUniqueWork(
+            "sync_kardex",
+            ExistingWorkPolicy.REPLACE,
+            fetchKardex
+        ).then(storeKardex).enqueue()
     }
 }

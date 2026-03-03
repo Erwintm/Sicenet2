@@ -7,7 +7,8 @@ import androidx.room.PrimaryKey
 data class MateriaUnidades(
     @PrimaryKey(autoGenerate = true) val id: Int = 0,
     val materia: String = "",
-    val unidades: String = "" // Guardaremos las notas como "90, 80, 100" o un JSON simple
+    val unidades: String = "",
+    var fechaSincronizacion: String = "" // <--- Agregado
 )
 
 // Para mapear lo que llegue del servidor
