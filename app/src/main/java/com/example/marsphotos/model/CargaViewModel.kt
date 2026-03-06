@@ -41,7 +41,7 @@ class CargaViewModel(
             .setRequiredNetworkType(NetworkType.CONNECTED)
             .build()
 
-        val fetchRequest = OneTimeWorkRequestBuilder<CargaWorker>()
+        val request = OneTimeWorkRequestBuilder<CargaWorker>()
             .setConstraints(constraints)
             .build()
 
@@ -52,7 +52,7 @@ class CargaViewModel(
         workManager.beginUniqueWork(
             "sync_carga_unica",
             ExistingWorkPolicy.REPLACE,
-            fetchRequest
+            request
         ).then(storeRequest).enqueue()
     }
 }
