@@ -8,7 +8,7 @@ import androidx.work.workDataOf
 import com.example.marsphotos.MarsPhotosApplication
 import com.google.gson.Gson
 
-class CargaWorker(ctx: Context, params: WorkerParameters) : CoroutineWorker(ctx, params) {
+class CargaAcademicaWorker(ctx: Context, params: WorkerParameters) : CoroutineWorker(ctx, params) {
     override suspend fun doWork(): Result {
         val repository = (applicationContext as MarsPhotosApplication).container.snRepository
 

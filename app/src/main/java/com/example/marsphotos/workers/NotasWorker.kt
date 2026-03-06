@@ -7,7 +7,7 @@ import androidx.work.workDataOf
 import com.example.marsphotos.MarsPhotosApplication
 import com.google.gson.Gson
 
-class FetchNotasWorker(ctx: Context, params: WorkerParameters) : CoroutineWorker(ctx, params) {
+class NotasWorker(ctx: Context, params: WorkerParameters) : CoroutineWorker(ctx, params) {
     override suspend fun doWork(): Result {
         val repository = (applicationContext as MarsPhotosApplication).container.snRepository
         return try {

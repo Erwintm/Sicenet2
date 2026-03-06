@@ -7,7 +7,7 @@ import com.example.marsphotos.MarsPhotosApplication
 import androidx.work.workDataOf
 import com.google.gson.Gson
 
-class FetchKardexWorker(ctx: Context, params: WorkerParameters) : CoroutineWorker(ctx, params) {
+class KardexWorker(ctx: Context, params: WorkerParameters) : CoroutineWorker(ctx, params) {
     override suspend fun doWork(): Result {
         val repository = (applicationContext as MarsPhotosApplication).container.snRepository
         return try {

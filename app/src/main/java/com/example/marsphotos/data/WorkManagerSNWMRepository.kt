@@ -7,7 +7,7 @@ import androidx.work.NetworkType
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkInfo
 import androidx.work.WorkManager
-import com.example.marsphotos.workers.CargaWorker
+import com.example.marsphotos.workers.CargaAcademicaWorker
 import com.example.marsphotos.workers.LoginDBWorker
 import com.example.marsphotos.workers.LoginWorker
 import com.example.marsphotos.workers.AlmacenarCargaWorker
@@ -48,7 +48,7 @@ class WorkManagerSNWMRepository(ctx: Context): SNWMRepository {
         val restricciones = Constraints.Builder()
             .setRequiredNetworkType(NetworkType.CONNECTED)
             .build()
-        val Carga = OneTimeWorkRequestBuilder<CargaWorker>()
+        val Carga = OneTimeWorkRequestBuilder<CargaAcademicaWorker>()
             .setConstraints(restricciones)
             .build()
 

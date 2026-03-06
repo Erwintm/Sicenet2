@@ -10,10 +10,9 @@ import androidx.work.*
 import com.example.marsphotos.data.SNRepository
 import com.example.marsphotos.model.Kardex
 
-import com.example.marsphotos.workers.StoreKardexWorker
+import com.example.marsphotos.workers.AlmacenarKardexWorker
 import kotlinx.coroutines.launch
-import androidx.lifecycle.asLiveData
-import com.example.marsphotos.data.FetchKardexWorker
+import com.example.marsphotos.data.KardexWorker
 
 data class KardexUiState(
     val isLoading: Boolean = false,
@@ -46,8 +45,8 @@ class KardexViewModel(
     }
 
     private fun sincronizarConWorkers() {
-        val fetchKardex = OneTimeWorkRequestBuilder<FetchKardexWorker>().build()
-        val storeKardex = OneTimeWorkRequestBuilder<StoreKardexWorker>().build()
+        val fetchKardex = OneTimeWorkRequestBuilder<KardexWorker>().build()
+        val storeKardex = OneTimeWorkRequestBuilder<AlmacenarKardexWorker>().build()
 
         workManager.beginUniqueWork(
             "sync_kardex",

@@ -12,7 +12,7 @@ import com.google.gson.reflect.TypeToken
 import java.text.SimpleDateFormat
 import java.util.*
 
-class StoreKardexWorker(ctx: Context, params: WorkerParameters) : CoroutineWorker(ctx, params) {
+class AlmacenarKardexWorker(ctx: Context, params: WorkerParameters) : CoroutineWorker(ctx, params) {
     override suspend fun doWork(): Result {
         val json = inputData.getString("KEY_KARDEX_JSON") ?: return Result.failure()
         val repository = (applicationContext as MarsPhotosApplication).container.snRepository

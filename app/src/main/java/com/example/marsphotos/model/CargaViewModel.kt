@@ -11,7 +11,7 @@ import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkInfo
 import androidx.work.WorkManager
 import com.example.marsphotos.data.SNRepository
-import com.example.marsphotos.workers.CargaWorker
+import com.example.marsphotos.workers.CargaAcademicaWorker
 import com.example.marsphotos.workers.AlmacenarCargaWorker
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -41,7 +41,7 @@ class CargaViewModel(
             .setRequiredNetworkType(NetworkType.CONNECTED)
             .build()
 
-        val request = OneTimeWorkRequestBuilder<CargaWorker>()
+        val request = OneTimeWorkRequestBuilder<CargaAcademicaWorker>()
             .setConstraints(constraints)
             .build()
 

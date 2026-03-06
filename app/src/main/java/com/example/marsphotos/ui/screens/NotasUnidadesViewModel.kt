@@ -9,8 +9,8 @@ import androidx.lifecycle.viewModelScope
 import androidx.work.*
 import com.example.marsphotos.data.SNRepository
 import com.example.marsphotos.model.MateriaUnidades
-import com.example.marsphotos.workers.FetchNotasWorker
-import com.example.marsphotos.workers.StoreNotasWorker
+import com.example.marsphotos.workers.NotasWorker
+import com.example.marsphotos.workers.AlmacenarNotasWorker
 import kotlinx.coroutines.launch
 
 data class NotasUiState(
@@ -46,8 +46,8 @@ class NotasUnidadesViewModel(
     }
 
     private fun sincronizarConWorkers() {
-        val fetch = OneTimeWorkRequestBuilder<FetchNotasWorker>().build()
-        val store = OneTimeWorkRequestBuilder<StoreNotasWorker>().build()
+        val fetch = OneTimeWorkRequestBuilder<NotasWorker>().build()
+        val store = OneTimeWorkRequestBuilder<AlmacenarNotasWorker>().build()
 
         workManager.beginUniqueWork(
             "sync_notas",

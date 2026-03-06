@@ -9,8 +9,8 @@ import androidx.lifecycle.viewModelScope
 import androidx.work.*
 import com.example.marsphotos.data.SNRepository
 import com.example.marsphotos.model.CalifFinal
-import com.example.marsphotos.workers.FetchFinalesWorker
-import com.example.marsphotos.workers.StoreFinalesWorker
+import com.example.marsphotos.workers.CalFinalesWorker
+import com.example.marsphotos.workers.AlmacenarFinalesWorker
 import kotlinx.coroutines.launch
 
 data class FinalUiState(
@@ -44,8 +44,8 @@ class CalifFinalViewModel(
     }
 
     private fun sincronizarConWorkers() {
-        val fetch = OneTimeWorkRequestBuilder<FetchFinalesWorker>().build()
-        val store = OneTimeWorkRequestBuilder<StoreFinalesWorker>().build()
+        val fetch = OneTimeWorkRequestBuilder<CalFinalesWorker>().build()
+        val store = OneTimeWorkRequestBuilder<AlmacenarFinalesWorker>().build()
 
         workManager.beginUniqueWork(
             "sync_finales",
