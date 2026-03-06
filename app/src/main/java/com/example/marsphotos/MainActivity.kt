@@ -32,14 +32,14 @@ class MainActivity : ComponentActivity() {
                         navController = navController,
                         startDestination = "login"
                     ) {
-                        // 1. Pantalla de Login
+                        // Pantalla de Login
                         composable("login") {
                             LoginPantalla(onLoginSuccess = { matricula ->
                                 navController.navigate("perfil/$matricula")
                             })
                         }
 
-                        // 2. Pantalla de Perfil
+                        //Pantalla de Perfil
                         composable("perfil/{matricula}") { backStackEntry ->
                             val matricula = backStackEntry.arguments?.getString("matricula") ?: ""
                             PerfilPantalla(
@@ -48,16 +48,16 @@ class MainActivity : ComponentActivity() {
                             )
                         }
 
-                        // 3. Menú Principal
+                        //Menú Principal
                         composable("menu") {
                             MenuScreen(navController = navController)
                         }
 
-                        // 4. Carga Académica
+                        // Carga Académica
                         composable("carga") {
                             val context = LocalContext.current
                             val app = context.applicationContext as MarsPhotosApplication
-                            val isOnline = isNetworkAvailable(context)
+                            val isOnline = conexionDisponible(context)
                             val viewModel: CargaViewModel = viewModel(
                                 factory = CargaViewModelFactory(app.container.snRepository, app)
                             )
@@ -68,12 +68,12 @@ class MainActivity : ComponentActivity() {
                             )
                         }
 
-                        // 5. Kardex Escolar
+                        //Kardex Escolar
                         composable("kardex") {
                             KardexScreen(navController = navController)
                         }
 
-                        // 6. Calificaciones por Unidad (CORREGIDO)
+                        //Calificaciones por Unidad (
                         composable("notas") {
                             val context = LocalContext.current
                             val app = context.applicationContext as MarsPhotosApplication
@@ -85,7 +85,7 @@ class MainActivity : ComponentActivity() {
                             NotasUnidadesScreen(viewModel = viewModel)
                         }
 
-                        // 7. Calificaciones Finales (CORREGIDO)
+                        //Calificaciones Finales
                         composable("finales") {
                             val context = LocalContext.current
                             val app = context.applicationContext as MarsPhotosApplication
@@ -106,7 +106,7 @@ class MainActivity : ComponentActivity() {
     }
 
     @SuppressLint("ServiceCast")
-    private fun isNetworkAvailable(context: Context): Boolean {
+    private fun conexionDisponible(context: Context): Boolean {
         val connectivityManager = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
         val network = connectivityManager.activeNetwork ?: return false
         val activeNetwork = connectivityManager.getNetworkCapabilities(network) ?: return false

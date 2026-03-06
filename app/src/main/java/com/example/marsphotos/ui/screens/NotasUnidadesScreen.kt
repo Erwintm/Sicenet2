@@ -24,8 +24,6 @@ import android.net.NetworkCapabilities
 fun NotasUnidadesScreen(viewModel: NotasUnidadesViewModel) {
     val context = LocalContext.current
     val uiState = viewModel.uiState
-
-    // MONITOREO DEL WORKER
     val workInfos by viewModel.syncWorkInfo.observeAsState()
     val isSyncing = workInfos?.any { it.state == WorkInfo.State.RUNNING } == true
 
@@ -38,8 +36,6 @@ fun NotasUnidadesScreen(viewModel: NotasUnidadesViewModel) {
         topBar = { TopAppBar(title = { Text("Calificaciones por Unidad") }) }
     ) { padding ->
         Column(modifier = Modifier.padding(padding)) {
-
-            // Etiqueta de última actualización (Punto 2 final)
             uiState.materias.firstOrNull()?.let {
                 Text(
                     text = "Última sincronización: ${it.fechaSincronizacion}",
@@ -64,7 +60,6 @@ fun NotasUnidadesScreen(viewModel: NotasUnidadesViewModel) {
     }
 }
 
-// Mantenemos tu diseño de Card porque está chido
 @Composable
 fun MateriaNotaCard(nombre: String, unidades: String) {
     Card(

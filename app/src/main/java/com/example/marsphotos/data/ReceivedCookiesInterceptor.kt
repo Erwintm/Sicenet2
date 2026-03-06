@@ -10,8 +10,7 @@ import java.io.IOException
 class ReceivedCookiesInterceptor(private val context: Context) : Interceptor {
 
     @Throws(IOException::class)
-    // En ReceivedCookiesInterceptor.kt
-    // En ReceivedCookiesInterceptor.kt
+
     override fun intercept(chain: Interceptor.Chain): Response {
         val originalResponse = chain.proceed(chain.request())
         val setCookieHeaders = originalResponse.headers("Set-Cookie")

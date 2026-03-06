@@ -21,5 +21,5 @@ data class CargaSoapBody(
 @Root(name = "getCargaAcademicaByAlumnoResponse", strict = false)
 data class CargaResultWrapper(
     @field:Element(name = "getCargaAcademicaByAlumnoResult", required = false)
-    var result: String? = null // Aquí es donde vive el JSON literal
+    var result: String? = null
 )

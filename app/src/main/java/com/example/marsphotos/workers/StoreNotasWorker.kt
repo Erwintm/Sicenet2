@@ -22,7 +22,7 @@ class StoreNotasWorker(ctx: Context, params: WorkerParameters) : CoroutineWorker
             val fechaActual = SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault()).format(Date())
             lista.forEach { it.fechaSincronizacion = fechaActual }
 
-            repository.insertarNotasLocal(lista) // A crear en el Repo
+            repository.insertarNotasLocal(lista)
             Result.success()
         } catch (e: Exception) {
             Result.failure()

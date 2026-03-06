@@ -11,13 +11,8 @@ class FetchFinalesWorker(ctx: Context, params: WorkerParameters) : CoroutineWork
     override suspend fun doWork(): Result {
         val repository = (applicationContext as MarsPhotosApplication).container.snRepository
         return try {
-            // 1. Consultar finales al repositorio
             val listaFinales = repository.fetchCalifFinalesRemote()
-
-            // 2. Convertir a JSON para el siguiente paso
             val json = Gson().toJson(listaFinales)
-
-            // 3. Éxito: enviamos el JSON con la llave KEY_FINALES_JSON
             Result.success(workDataOf("KEY_FINALES_JSON" to json))
         } catch (e: Exception) {
             Result.failure()

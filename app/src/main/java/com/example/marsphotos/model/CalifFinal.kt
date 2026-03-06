@@ -10,7 +10,7 @@ data class CalifFinal(
     val grupo: String = "",
     val calificacion: Int = 0,
     val acreditacion: String = "",
-    var fechaSincronizacion: String = "" // <--- Agregado
+    var fechaSincronizacion: String = ""
 )
 
 // Para el parseo

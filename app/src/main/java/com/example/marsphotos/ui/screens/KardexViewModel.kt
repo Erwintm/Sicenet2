@@ -21,22 +21,17 @@ data class KardexUiState(
     val error: String? = null
 )
 
-// Cambiamos a AndroidViewModel para tener acceso al Context para WorkManager
+
 class KardexViewModel(
     application: Application,
     private val repository: SNRepository
 ) : AndroidViewModel(application) {
-
     var uiState by mutableStateOf(KardexUiState())
         private set
-
     private val workManager = WorkManager.getInstance(application)
-
-    // Observamos el estatus de la sincronización (Punto 2b: Monitorear estatus)
     val syncWorkInfo = workManager.getWorkInfosForUniqueWorkLiveData("sync_kardex")
 
     init {
-        // 1. Siempre observar la base de datos local (Single Source of Truth)
         viewModelScope.launch {
             repository.obtenerKardexLocal().collect { lista ->
                 uiState = uiState.copy(materias = lista)
@@ -51,7 +46,6 @@ class KardexViewModel(
     }
 
     private fun sincronizarConWorkers() {
-        // Punto 2b: Dos peticiones de trabajo que se ven como únicos
         val fetchKardex = OneTimeWorkRequestBuilder<FetchKardexWorker>().build()
         val storeKardex = OneTimeWorkRequestBuilder<StoreKardexWorker>().build()
 

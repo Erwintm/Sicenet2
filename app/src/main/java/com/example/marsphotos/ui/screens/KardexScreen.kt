@@ -28,8 +28,6 @@ fun KardexScreen(
 ) {
     val context = LocalContext.current
     val application = context.applicationContext as MarsPhotosApplication
-
-    // Checamos internet para cumplir el punto de "Si tiene internet disparar worker"
     val isOnline = remember { isNetworkAvailable(context) }
 
     val viewModel: KardexViewModel = viewModel(
@@ -37,8 +35,6 @@ fun KardexScreen(
     )
 
     val state = viewModel.uiState
-
-    // MONITOREO DEL WORKER (Punto 2b: El worker debe ser monitoreado)
     val workInfos by viewModel.syncWorkInfo.observeAsState()
     val isSyncing = workInfos?.any { it.state == WorkInfo.State.RUNNING } == true
 
@@ -52,7 +48,6 @@ fun KardexScreen(
         Column(
             modifier = Modifier.fillMaxSize().padding(padding).padding(16.dp)
         ) {
-            // MOSTRAR FECHA (Requisito: Mostrar etiqueta con fecha de última actualización)
             state.materias.firstOrNull()?.let {
                 Card(
                     colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.tertiaryContainer),
@@ -66,7 +61,6 @@ fun KardexScreen(
                 }
             }
 
-            // Si está cargando o el worker está corriendo, mostramos progreso
             if ((state.isLoading || isSyncing) && state.materias.isEmpty()) {
                 Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                     CircularProgressIndicator()

@@ -14,11 +14,11 @@ import com.example.marsphotos.model.ProfileStudent
     entities = [
         CargaAcademica::class,
         Kardex::class,
-        MateriaUnidades::class, // Agregada
-        CalifFinal::class,      // Agregada
-        ProfileStudent::class// 1. Agregamos la entidad Kardex aquí
+        MateriaUnidades::class,
+        CalifFinal::class,
+        ProfileStudent::class
     ],
-    version = 3, // 2. Subimos la versión a 2
+    version = 3,
     exportSchema = false
 )
 abstract class SNDatabase : RoomDatabase() {
@@ -31,7 +31,7 @@ abstract class SNDatabase : RoomDatabase() {
         fun getDatabase(context: Context): SNDatabase {
             return Instance ?: synchronized(this) {
                 Room.databaseBuilder(context, SNDatabase::class.java, "sicenet_db")
-                    // 3. Esto borra la DB vieja y crea la nueva con la tabla kardex
+
                     .fallbackToDestructiveMigration()
                     .build()
                     .also { Instance = it }

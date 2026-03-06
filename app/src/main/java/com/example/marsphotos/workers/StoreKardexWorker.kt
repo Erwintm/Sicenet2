@@ -20,12 +20,8 @@ class StoreKardexWorker(ctx: Context, params: WorkerParameters) : CoroutineWorke
         return try {
             val listType = object : TypeToken<List<Kardex>>() {}.type
             val materias: List<Kardex> = Gson().fromJson(json, listType)
-
-            // Sello de fecha (Punto b)
             val fechaActual = SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault()).format(Date())
             materias.forEach { it.fechaSincronizacion = fechaActual }
-
-            // Guardar en Room (Necesitas crear esta función en el Repository)
             repository.insertarKardexLocal(materias)
 
             Result.success()

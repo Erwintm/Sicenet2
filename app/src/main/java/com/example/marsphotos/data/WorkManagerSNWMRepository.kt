@@ -4,14 +4,13 @@ import android.content.Context
 import androidx.work.Constraints
 import androidx.work.ExistingWorkPolicy
 import androidx.work.NetworkType
-import androidx.work.OneTimeWorkRequest
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkInfo
 import androidx.work.WorkManager
-import com.example.marsphotos.workers.FetchCargaWorker
+import com.example.marsphotos.workers.CargaWorker
 import com.example.marsphotos.workers.LoginDBWorker
 import com.example.marsphotos.workers.LoginWorker
-import com.example.marsphotos.workers.StoreCargaWorker
+import com.example.marsphotos.workers.AlmacenarCargaWorker
 import kotlinx.coroutines.flow.Flow
 
 class WorkManagerSNWMRepository(ctx: Context): SNWMRepository {
@@ -49,17 +48,14 @@ class WorkManagerSNWMRepository(ctx: Context): SNWMRepository {
         val restricciones = Constraints.Builder()
             .setRequiredNetworkType(NetworkType.CONNECTED)
             .build()
-
-
-        val fetchCarga = OneTimeWorkRequestBuilder<FetchCargaWorker>()
+        val Carga = OneTimeWorkRequestBuilder<CargaWorker>()
             .setConstraints(restricciones)
             .build()
 
-
-        val storeCarga = OneTimeWorkRequestBuilder<StoreCargaWorker>().build()
+        val storeCarga = OneTimeWorkRequestBuilder<AlmacenarCargaWorker>().build()
 
         workManager
-            .beginUniqueWork("carga_sync", ExistingWorkPolicy.KEEP, fetchCarga)
+            .beginUniqueWork("carga_sync", ExistingWorkPolicy.KEEP, Carga)
             .then(storeCarga)
             .enqueue()
     }

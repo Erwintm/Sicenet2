@@ -1,6 +1,5 @@
 package com.example.marsphotos.data
 
-import android.util.Log
 import com.example.marsphotos.model.*
 import com.example.marsphotos.network.*
 import com.google.gson.Gson
@@ -9,9 +8,6 @@ import kotlinx.coroutines.flow.Flow
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.RequestBody.Companion.toRequestBody
-import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
 
 interface SNRepository {
     // Auth & Perfil
@@ -19,8 +15,8 @@ interface SNRepository {
     suspend fun profile(m: String): ProfileStudent
 
     // Carga Académica
-    suspend fun fetchCargaAcademica(): List<CargaAcademica>
-    fun getCargaLocal(): Flow<List<CargaAcademica>>
+    suspend fun traerCargaAcademica(): List<CargaAcademica>
+    fun obtenerCarga(): Flow<List<CargaAcademica>>
     suspend fun insertLocalCarga(materias: List<CargaAcademica>)
 
     // Kardex
@@ -44,7 +40,7 @@ class NetworkSNRepository(
     private val snDao: SNDao
 ) : SNRepository {
 
-    // --- AUTENTICACIÓN ---
+    //AUTENTICACIÓN
     override suspend fun acceso(m: String, p: String): String {
         return try {
             val xmlString = getLoginXml(m, p)
@@ -55,7 +51,7 @@ class NetworkSNRepository(
         } catch (e: Exception) { "error" }
     }
 
-    // --- PERFIL ---
+    //PERFIL
     override suspend fun profile(m: String): ProfileStudent {
         return try {
             val xmlString = getPerfilXml(m)
@@ -78,8 +74,8 @@ class NetworkSNRepository(
         } catch (e: Exception) { ProfileStudent(m, "Error de red", "", "", "", "", "") }
     }
 
-    // --- CARGA ACADÉMICA ---
-    override suspend fun fetchCargaAcademica(): List<CargaAcademica> {
+    // Carga académica
+    override suspend fun traerCargaAcademica(): List<CargaAcademica> {
         return try {
             val xmlString = getCargaXml()
             val requestBody = xmlString.toRequestBody("text/xml; charset=utf-8".toMediaTypeOrNull())
@@ -90,14 +86,14 @@ class NetworkSNRepository(
         } catch (e: Exception) { emptyList() }
     }
 
-    override fun getCargaLocal(): Flow<List<CargaAcademica>> = snDao.obtenerCarga()
+    override fun obtenerCarga(): Flow<List<CargaAcademica>> = snDao.obtenerCarga()
 
     override suspend fun insertLocalCarga(materias: List<CargaAcademica>) {
         snDao.borrarCarga()
         snDao.insertarCarga(materias)
     }
 
-    // --- KARDEX ---
+    //KARDEX
     override suspend fun fetchKardexRemote(): List<Kardex> {
         return try {
             val xmlString = getKardexXml()
@@ -117,7 +113,7 @@ class NetworkSNRepository(
         snDao.insertarKardex(lista)
     }
 
-    // --- NOTAS POR UNIDAD ---
+    //NOTAS POR UNIDAD
     override suspend fun fetchNotasUnidadesRemote(): List<MateriaUnidades> {
         return try {
             val xmlString = getNotasUnidadesXml()
@@ -136,7 +132,7 @@ class NetworkSNRepository(
         snDao.insertarNotas(lista)
     }
 
-    // --- CALIFICACIONES FINALES ---
+    //CALIFICACIONES FINALES
     override suspend fun fetchCalifFinalesRemote(): List<CalifFinal> {
         return try {
             val xmlString = getCalifFinalXml()
@@ -167,7 +163,7 @@ class NetworkSNRepository(
         snDao.insertarFinales(lista)
     }
 
-    // --- PARSEADORES INTERNOS ---
+    //PARSEADORES INTERNOS
     private fun parsearKardex(jsonString: String): List<Kardex> {
         return try {
             val response: KardexResponse = Gson().fromJson(jsonString, KardexResponse::class.java)

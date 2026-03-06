@@ -29,11 +29,9 @@ class NotasUnidadesViewModel(
 
     private val workManager = WorkManager.getInstance(application)
 
-    // Monitoreo del status para la UI (Punto 2b)
     val syncWorkInfo = workManager.getWorkInfosForUniqueWorkLiveData("sync_notas")
 
     init {
-        // LEER SIEMPRE DE LOCAL (Punto 1 y Requisito Offline)
         viewModelScope.launch {
             repository.obtenerNotasLocal().collect { lista ->
                 uiState = uiState.copy(materias = lista)
@@ -48,7 +46,6 @@ class NotasUnidadesViewModel(
     }
 
     private fun sincronizarConWorkers() {
-        // ENCADENAMIENTO ÚNICO (Punto 2b)
         val fetch = OneTimeWorkRequestBuilder<FetchNotasWorker>().build()
         val store = OneTimeWorkRequestBuilder<StoreNotasWorker>().build()
 

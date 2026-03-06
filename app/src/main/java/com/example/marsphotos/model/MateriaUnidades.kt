@@ -8,10 +8,10 @@ data class MateriaUnidades(
     @PrimaryKey(autoGenerate = true) val id: Int = 0,
     val materia: String = "",
     val unidades: String = "",
-    var fechaSincronizacion: String = "" // <--- Agregado
+    var fechaSincronizacion: String = ""
 )
 
-// Para mapear lo que llegue del servidor
+
 data class UnidadesResponse(val lstCalificacionUnidades: List<UnidadesRaw>)
 data class UnidadesRaw(
     val Materia: String?,

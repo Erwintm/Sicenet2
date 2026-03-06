@@ -7,7 +7,7 @@ import com.example.marsphotos.data.SNRepository
 import com.example.marsphotos.ui.screens.KardexViewModel
 
 class KardexViewModelFactory(
-    private val application: Application, // <-- Agregar esto
+    private val application: Application,
     private val repository: SNRepository
 ) : ViewModelProvider.Factory {
     override fun <T : ViewModel> create(modelClass: Class<T>): T {

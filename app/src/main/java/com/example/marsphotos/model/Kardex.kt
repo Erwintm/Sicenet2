@@ -10,7 +10,7 @@ data class Kardex(
     val clvMateria: String = "",
     val materia: String = "",
     val calificacion: Int = 0,
-    val acreditacion: String = "", // Ejemplo: "ORDINARIO"
-    val periodo: String = "",      // Ejemplo: "AGO-DIC 2023"
-    var fechaSincronizacion: String = "" // Requerido por el profe
+    val acreditacion: String = "",
+    val periodo: String = "",
+    var fechaSincronizacion: String = ""
 )

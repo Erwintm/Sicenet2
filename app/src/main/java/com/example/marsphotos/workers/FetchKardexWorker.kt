@@ -11,9 +11,8 @@ class FetchKardexWorker(ctx: Context, params: WorkerParameters) : CoroutineWorke
     override suspend fun doWork(): Result {
         val repository = (applicationContext as MarsPhotosApplication).container.snRepository
         return try {
-            val listaKardex = repository.fetchKardexRemote() // Obtenemos la lista
+            val listaKardex = repository.fetchKardexRemote()
             if (listaKardex.isNotEmpty()) {
-                // PASAR EL JSON AL SIGUIENTE (Como en Carga)
                 val json = Gson().toJson(listaKardex)
                 Result.success(workDataOf("KEY_KARDEX_JSON" to json))
             } else {

@@ -26,14 +26,10 @@ class CalifFinalViewModel(
 
     var uiState by mutableStateOf(FinalUiState())
         private set
-
     private val workManager = WorkManager.getInstance(application)
-
-    // Monitoreo del status para la UI (Requisito 2b)
     val syncWorkInfo = workManager.getWorkInfosForUniqueWorkLiveData("sync_finales")
 
     init {
-        // Escuchamos la base de datos local siempre (Offline-First)
         viewModelScope.launch {
             repository.obtenerFinalesLocal().collect { lista ->
                 uiState = uiState.copy(listaFinal = lista)
@@ -48,7 +44,6 @@ class CalifFinalViewModel(
     }
 
     private fun sincronizarConWorkers() {
-        // Encadenamiento: Fetch -> Store
         val fetch = OneTimeWorkRequestBuilder<FetchFinalesWorker>().build()
         val store = OneTimeWorkRequestBuilder<StoreFinalesWorker>().build()
 

@@ -1,7 +1,6 @@
 package com.example.marsphotos.model
 
 import android.app.Application
-import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -12,14 +11,11 @@ import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkInfo
 import androidx.work.WorkManager
 import com.example.marsphotos.data.SNRepository
-import com.example.marsphotos.workers.FetchCargaWorker
-import com.example.marsphotos.workers.StoreCargaWorker
-import kotlinx.coroutines.flow.MutableStateFlow
+import com.example.marsphotos.workers.CargaWorker
+import com.example.marsphotos.workers.AlmacenarCargaWorker
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.stateIn
-import kotlinx.coroutines.launch
 
 class CargaViewModel(
     private val repository: SNRepository,
@@ -29,7 +25,7 @@ class CargaViewModel(
     private val workManager = WorkManager.getInstance(application)
 
 
-    val materias: StateFlow<List<CargaAcademica>> = repository.getCargaLocal()
+    val materias: StateFlow<List<CargaAcademica>> = repository.obtenerCarga()
         .stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5000),
@@ -45,11 +41,11 @@ class CargaViewModel(
             .setRequiredNetworkType(NetworkType.CONNECTED)
             .build()
 
-        val fetchRequest = OneTimeWorkRequestBuilder<FetchCargaWorker>()
+        val fetchRequest = OneTimeWorkRequestBuilder<CargaWorker>()
             .setConstraints(constraints)
             .build()
 
-        val storeRequest = OneTimeWorkRequestBuilder<StoreCargaWorker>()
+        val storeRequest = OneTimeWorkRequestBuilder<AlmacenarCargaWorker>()
             .build()
 
 

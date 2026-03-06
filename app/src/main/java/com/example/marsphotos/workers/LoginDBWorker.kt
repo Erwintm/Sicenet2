@@ -9,9 +9,7 @@ class LoginDBWorker (ctx: Context, params: WorkerParameters) :
     override suspend fun doWork(): Result {
 
         val resourceUri = inputData.getString("u")
-        //TODO("Not yet implemented")
-        //Hay que ir a Room
-        //dao.insert(u)
+
         return  Result.success()
     }
 

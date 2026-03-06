@@ -21,7 +21,7 @@ import com.example.marsphotos.model.MenuOption
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MenuScreen(navController: NavController) {
-    // Lista de opciones actualizada con las 4 secciones principales
+
     val options = listOf(
         MenuOption("Carga\nAcadémica", "carga", Color(0xFF1976D2)),
         MenuOption("Kardex\nEscolar", "kardex", Color(0xFF388E3C)),
