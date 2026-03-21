@@ -29,19 +29,19 @@ interface SNDao {
     @Query("DELETE FROM kardex")
     suspend fun borrarKardex()
 
-    // NOTAS POR UNIDAD (NUEVO)
+    // NOTAS POR UNIDAD
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertarNotas(notas: List<MateriaUnidades>)
     @Query("SELECT * FROM notas_unidades")
     fun obtenerNotas(): Flow<List<MateriaUnidades>>
 
-    // CALIF FINALES (NUEVO)
+    // CALIF FINALES
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertarFinales(finales: List<CalifFinal>)
     @Query("SELECT * FROM calif_finales")
     fun obtenerFinales(): Flow<List<CalifFinal>>
 
-    // PERFIL (NUEVO)
+    // PERFIL
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertarPerfil(perfil: ProfileStudent)
     @Query("SELECT * FROM perfil_estudiante WHERE matricula = :mat")
