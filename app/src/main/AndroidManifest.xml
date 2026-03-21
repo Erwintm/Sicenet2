@@ -38,5 +38,11 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <provider
+            android:name=".provider.SNContentProvider"
+            android:authorities="com.example.marsphotos.provider"
+            android:exported="true"
+            android:enabled="true"
+            tools:ignore="MissingClass" />
     </application>
 </manifest>

@@ -1,5 +1,6 @@
 package com.example.marsphotos.data
 
+import android.database.Cursor
 import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
@@ -46,4 +47,10 @@ interface SNDao {
     suspend fun insertarPerfil(perfil: ProfileStudent)
     @Query("SELECT * FROM perfil_estudiante WHERE matricula = :mat")
     fun obtenerPerfil(mat: String): Flow<ProfileStudent?>
+
+    @Query("SELECT * FROM carga_academica")
+    fun obtenerCargaCursor(): Cursor
+
+    @Query("SELECT * FROM kardex")
+    fun obtenerKardexCursor(): Cursor
 }

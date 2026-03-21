@@ -11,9 +11,9 @@ import com.example.marsphotos.model.MateriaUnidades
 import com.example.marsphotos.model.ProfileStudent
 
 @Database(
-    entities = [
-        CargaAcademica::class,
-        Kardex::class,
+            entities = [
+                CargaAcademica::class,
+                Kardex::class,
         MateriaUnidades::class,
         CalifFinal::class,
         ProfileStudent::class
