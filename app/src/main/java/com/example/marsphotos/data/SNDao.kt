@@ -30,6 +30,12 @@ interface SNDao {
     @Query("DELETE FROM kardex")
     suspend fun borrarKardex()
 
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    fun insertarCargaDesdeProvider(materia: CargaAcademica): Long
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    fun insertarKardexDesdeProvider(materia: Kardex): Long
+
     // NOTAS POR UNIDAD
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertarNotas(notas: List<MateriaUnidades>)
