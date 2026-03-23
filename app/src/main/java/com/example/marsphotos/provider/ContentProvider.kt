@@ -39,7 +39,7 @@ class SNContentProvider : ContentProvider() {
         selectionArgs: Array<out String>?,
         sortOrder: String?
     ): Cursor? {
-        // En tu SNDatabase la función se llama cargaDao()
+
         val dao = database.cargaDao()
         val cursor: Cursor = when (uriMatcher.match(uri)) {
             CARGA -> dao.obtenerCargaCursor()
@@ -57,7 +57,7 @@ class SNContentProvider : ContentProvider() {
 
         val id: Long = when (uriMatcher.match(uri)) {
             CARGA -> {
-                // Mapeo con los nombres exactos de CargaAcademica.kt
+
                 val materia = CargaAcademica(
                     Materia = values.getAsString("Materia") ?: "",
                     Docente = values.getAsString("Docente") ?: "",
@@ -69,10 +69,10 @@ class SNContentProvider : ContentProvider() {
                 dao.insertarCargaDesdeProvider(materia)
             }
             KARDEX -> {
-                // Mapeo con los nombres exactos de Kardex.kt
+
                 val materiaKardex = Kardex(
                     materia = values.getAsString("materia") ?: "",
-                    // Cambiamos getAsInt por getAsInteger
+
                     calificacion = values.getAsInteger("calificacion") ?: 0,
                     acreditacion = values.getAsString("acreditacion") ?: "",
                     periodo = values.getAsString("periodo") ?: "",
